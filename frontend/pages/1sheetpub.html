@@ -12,7 +12,7 @@
         }
 
         body {
-            background: #e2e8f0;
+            background: #0a0a0a;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -25,9 +25,9 @@
         .onesheet {
             max-width: 1100px;
             width: 100%;
-            background: white;
+            background: #111;
             border-radius: 24px;
-            box-shadow: 0 25px 40px -12px rgba(0,0,0,0.2);
+            box-shadow: 0 25px 40px -12px rgba(0,0,0,0.5);
             overflow: hidden;
             page-break-after: avoid;
             break-inside: avoid;
@@ -35,7 +35,7 @@
 
         /* header with brand */
         .header-sheet {
-            background: #0f2c29;
+            background: #111;
             padding: 32px 40px 24px 40px;
             color: white;
         }
@@ -50,14 +50,14 @@
         .header-sheet .sub {
             font-size: 1rem;
             color: #c1ded7;
-            border-left: 3px solid #469e8a;
+            border-left: 3px solid #22d3ee;
             padding-left: 16px;
             margin-top: 6px;
         }
 
         .badge-pilot {
             display: inline-block;
-            background: #2f6b5f;
+            background: #22d3ee;
             padding: 4px 14px;
             border-radius: 40px;
             font-size: 0.7rem;
@@ -86,8 +86,8 @@
         .section-title {
             font-size: 1.3rem;
             font-weight: 700;
-            color: #0f2c29;
-            border-left: 4px solid #2f6b5f;
+            color: #e0e0e0;
+            border-left: 4px solid #22d3ee;
             padding-left: 14px;
             margin: 24px 0 16px 0;
         }
@@ -125,7 +125,7 @@
 
         .step-card {
             flex: 1;
-            background: #f8fbfa;
+            background: #141414;
             border-radius: 20px;
             padding: 16px;
             border: 1px solid #e2ede8;
@@ -133,7 +133,7 @@
         }
 
         .step-num {
-            background: #0f2c29;
+            background: #111;
             color: white;
             width: 32px;
             height: 32px;
@@ -153,23 +153,23 @@
         }
 
         .tech-item {
-            background: #fefefb;
-            border-left: 3px solid #2f6b5f;
+            background: #141414;
+            border-left: 3px solid #22d3ee;
             padding: 12px 14px;
             border-radius: 14px;
             font-size: 0.8rem;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+            box-shadow: none;
         }
 
         .tech-item strong {
             display: block;
             font-size: 0.85rem;
             margin-bottom: 6px;
-            color: #1a5a50;
+            color: #22d3ee;
         }
 
         .cta-box {
-            background: #eef3f1;
+            background: #1a1a1a;
             border-radius: 24px;
             padding: 24px 28px;
             text-align: center;
@@ -177,7 +177,7 @@
         }
 
         .btn-mail {
-            background: #1f5e54;
+            background: #22d3ee;
             color: white;
             padding: 10px 28px;
             border-radius: 60px;
@@ -202,7 +202,7 @@
 
         @media print {
             body {
-                background: white;
+                background: #111;
                 padding: 0;
                 margin: 0;
             }
@@ -302,16 +302,16 @@
         .footer-note { color: var(--text-dim); }
 
         /* Inline bg overrides */
-        div[style*="background:#f9faf8"],
-        div[style*="background: #f4faf7"],
-        div[style*="background: #f8fbfa"] {
+        div[style*="background:#141414"],
+        div[style*="background: #141414"],
+        div[style*="background: #141414"] {
             background: var(--bg-soft) !important;
             border-color: var(--line) !important;
             color: var(--text-main) !important;
         }
 
         /* Value numbers */
-        div[style*="color: #1f5e54"] {
+        div[style*="color: #22d3ee"] {
             color: var(--accent-2) !important;
         }
     </style>
@@ -328,17 +328,17 @@
         <!-- Snabbt värde -->
         <div class="grid-2col">
             <div class="col">
-                <div style="font-weight: 800; font-size: 2rem; color: #1f5e54;">↓70%</div>
+                <div style="font-weight: 800; font-size: 2rem; color: #22d3ee;">↓70%</div>
                 <div style="font-weight: 600;">fewer split-related rejections*</div>
                 <div style="font-size: 0.7rem; margin-top: 6px;">*based on pre-pilot validation data</div>
             </div>
             <div class="col">
-                <div style="font-weight: 800; font-size: 2rem; color: #1f5e54;">⏱️ 2h → 20min</div>
+                <div style="font-weight: 800; font-size: 2rem; color: #22d3ee;">⏱️ 2h → 20min</div>
                 <div style="font-weight: 600;">manual review time per catalog batch</div>
                 <div style="font-size: 0.7rem;">after using Roya verification</div>
             </div>
             <div class="col">
-                <div style="font-weight: 800; font-size: 2rem; color: #1f5e54;">🔒 100%</div>
+                <div style="font-weight: 800; font-size: 2rem; color: #22d3ee;">🔒 100%</div>
                 <div style="font-weight: 600;">immutable audit trail</div>
                 <div style="font-size: 0.7rem;">cryptographic proof for each work</div>
             </div>
@@ -372,7 +372,7 @@
                     <li>Willingness to review flagged issues</li>
                     <li>30 min for kick-off + 15 min for results</li>
                 </ul>
-                <div style="background:#f9faf8; border-radius: 16px; padding: 12px; margin-top: 14px;">
+                <div style="background:#141414; border-radius: 16px; padding: 12px; margin-top: 14px;">
                     <span style="font-weight: 700;">🔒 No integration.</span> No auto-changes. GDPR compliant.
                 </div>
             </div>
@@ -389,10 +389,10 @@
         <p style="font-size: 0.7rem; margin-top: 6px;">*No funds handling — only structured payment instructions for your banking provider.</p>
 
         <!-- Varför pilot + STIM-koppling -->
-        <div style="background: #f4faf7; border-radius: 20px; padding: 16px 20px; margin: 20px 0 12px;">
+        <div style="background: #141414; border-radius: 20px; padding: 16px 20px; margin: 20px 0 12px;">
             <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px;">
                 <div><strong>🧪 Why join the pilot?</strong> Free for 30 days. Real STIM-bound catalog. No commercial commitment.</div>
-                <div><span style="background: #0f2c29; color: white; padding: 4px 12px; border-radius: 40px; font-size: 0.7rem;">STIM cooperation framework</span></div>
+                <div><span style="background: #111; color: white; padding: 4px 12px; border-radius: 40px; font-size: 0.7rem;">STIM cooperation framework</span></div>
             </div>
         </div>
 
@@ -400,7 +400,7 @@
         <div class="cta-box">
             <div style="font-size: 1.3rem; font-weight: 700;">Ready to test 5–10 works?</div>
             <p style="margin: 8px 0 4px;">We’ll run a zero-commitment sample and show you the hidden split conflicts.</p>
-            <a href="mailto:evaluation@roya.tech" class="btn-mail">✉️ evaluation@roya.tech</a>
+            <a href="mailto:hello@heyroya.se" class="btn-mail">✉️ hello@heyroya.se</a>
             <div style="font-size: 0.7rem; margin-top: 8px;">Reply within 24h | Confidential pilot</div>
         </div>
 

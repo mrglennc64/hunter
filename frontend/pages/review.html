@@ -563,6 +563,60 @@
                 '</div>';
             }
 
+            // ── ISRC FIX — multi-step search (same as ISWC) ──
+            if (issue.field === 'isrc') {
+                var body = '<div style="font-size:12px;color:#9ca3af;line-height:1.6;margin-bottom:12px;">'+esc(issue.problem)+'</div>';
+                body += '<div style="font-size:11px;color:#6b7280;margin-bottom:12px;line-height:1.6;">The ISRC (International Standard Recording Code) uniquely identifies each sound recording. Without it, streaming royalties from Spotify, Apple Music, and other DSPs cannot be matched to this work.</div>';
+
+                if (ss.phase === 'idle') {
+                    body += '<div class="fix-actions">' +
+                        '<button class="btn-yn-yes" onclick="searchIsrc('+i+')">\ud83d\udd0d Search MusicBrainz / IFPI</button>' +
+                        '<button class="btn-fix" onclick="showManualInput('+i+')">\u270d Enter manually</button>' +
+                        '<button class="btn-yn-no" onclick="markPending('+i+')">\u23f3 Mark as pending</button>' +
+                    '</div>';
+                } else if (ss.phase === 'searching') {
+                    body += '<div style="padding:16px 0;text-align:center;"><div style="font-size:12px;color:#9ca3af;">Searching MusicBrainz and IFPI databases\u2026</div></div>';
+                } else if (ss.phase === 'results') {
+                    if (ss.results.length > 0) {
+                        var trows = ss.results.map(function(r, ri) {
+                            var sel = ss.selected === ri;
+                            return '<tr style="cursor:pointer;'+(sel?'background:rgba(34,197,94,0.07);':'')+'color:'+(sel?'#e0e0e0':'#9ca3af')+'" onclick="selectIsrcResult('+i+','+ri+')">' +
+                                '<td style="padding:7px 12px;border-top:1px solid #222;font-family:monospace;'+(sel?'color:#22c55e;font-weight:600;':'')+'">'+esc(r.isrc)+'</td>' +
+                                '<td style="padding:7px 12px;border-top:1px solid #222;">'+esc(r.title)+'</td>' +
+                                '<td style="padding:7px 12px;border-top:1px solid #222;">'+esc(r.artist)+'</td>' +
+                                '<td style="padding:7px 12px;border-top:1px solid #222;"><span style="display:inline-block;padding:1px 7px;border-radius:999px;font-size:10px;font-weight:700;background:rgba(34,197,94,0.15);color:#22c55e;">'+esc(r.confidence)+'</span></td>' +
+                                '<td style="padding:7px 12px;border-top:1px solid #222;">'+esc(r.source)+'</td>' +
+                            '</tr>';
+                        }).join('');
+                        body += '<table style="width:100%;border-collapse:collapse;font-size:12px;margin:10px 0;"><thead><tr>' +
+                            '<th style="background:#0d0d0d;color:#555;font-weight:600;padding:6px 12px;text-align:left;font-size:10px;text-transform:uppercase;">ISRC</th>' +
+                            '<th style="background:#0d0d0d;color:#555;font-weight:600;padding:6px 12px;text-align:left;font-size:10px;text-transform:uppercase;">Title</th>' +
+                            '<th style="background:#0d0d0d;color:#555;font-weight:600;padding:6px 12px;text-align:left;font-size:10px;text-transform:uppercase;">Artist</th>' +
+                            '<th style="background:#0d0d0d;color:#555;font-weight:600;padding:6px 12px;text-align:left;font-size:10px;text-transform:uppercase;">Confidence</th>' +
+                            '<th style="background:#0d0d0d;color:#555;font-weight:600;padding:6px 12px;text-align:left;font-size:10px;text-transform:uppercase;">Source</th>' +
+                        '</tr></thead><tbody>'+trows+'</tbody></table>';
+                        body += '<div class="fix-actions">' +
+                            '<button class="btn-yn-yes" '+(ss.selected===null?'disabled style="opacity:0.4;cursor:not-allowed;"':'')+' onclick="confirmIsrc('+i+')">\u2705 Apply selected ISRC</button>' +
+                            '<button class="btn-yn-no" onclick="cancelSearch('+i+')">\u274c Cancel</button>' +
+                        '</div>';
+                    } else {
+                        body += '<div style="padding:10px 0;"><div style="font-size:13px;color:#9ca3af;">No ISRC found. Enter manually or check with your distributor/label.</div></div>';
+                        body += '<div class="fix-actions"><button class="btn-fix" onclick="showManualInput('+i+')">\u270d Enter manually</button><button class="btn-yn-no" onclick="cancelSearch('+i+')">\u2190 Back</button></div>';
+                    }
+                } else if (ss.phase === 'manual') {
+                    body += '<input class="fix-input" id="manual-'+i+'" placeholder="e.g. SE6I12345678">';
+                    body += '<div class="fix-actions" style="margin-top:8px;"><button class="btn-yn-yes" onclick="applyManualIsrc('+i+')">\u2705 Apply ISRC</button><button class="btn-yn-no" onclick="cancelSearch('+i+')">\u2190 Back</button></div>';
+                }
+                body += '<div style="font-size:10px;color:#555;margin-top:12px;padding-top:10px;border-top:1px solid #222;font-style:italic;">All changes require user confirmation. No metadata is modified automatically.</div>';
+
+                return '<div class="suggestion-card" id="card-'+i+'">' +
+                    '<span style="display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;padding:2px 9px;border-radius:999px;margin-bottom:10px;background:'+sevBg+';color:'+sevColor+';">'+sevLabel+'</span>' +
+                    '<div style="font-size:10px;color:#555;margin-bottom:4px;">'+esc(issue.work)+'</div>' +
+                    '<div style="font-size:14px;font-weight:700;color:#e0e0e0;margin-bottom:6px;">ISRC not identified</div>' +
+                    body +
+                '</div>';
+            }
+
             // ── PUBLISHER FIX — multi-step with MusicBrainz/BMI search ──
             if (issue.field === 'publisher') {
                 var body = '<div style="font-size:12px;color:#9ca3af;line-height:1.6;margin-bottom:12px;">'+esc(issue.problem)+'</div>';
@@ -781,6 +835,78 @@
             title: esc(getCardTitle(issue)) + ' — resolved',
             fields: { 'Applied value': val, 'Source': 'Manual entry' },
             explanation: 'Value updated based on user-provided information.'
+        };
+        fixedCount++;
+        _searchState[i] = { phase: 'idle', results: [], selected: null };
+        renderIssueCards();
+        updateFixedBadge();
+    }
+
+    // ── Search ISRC (MusicBrainz / IFPI) ──
+    async function searchIsrc(i) {
+        _searchState[i] = { phase: 'searching', results: [], selected: null };
+        renderIssueCards();
+        await new Promise(function(r) { setTimeout(r, 2000); });
+        var issue = issueList[i];
+        var title = issue.work || '';
+        // Demo results based on work title
+        var demoResults = [];
+        if (title.toLowerCase().indexOf('vinterljus') !== -1) {
+            demoResults = [
+                { isrc: 'SE6I21400285', title: 'Vinterljus', artist: 'Johan Nilsson', confidence: 'High', source: 'MusicBrainz' },
+                { isrc: 'SE6I21400286', title: 'Vinterljus (Radio Edit)', artist: 'Johan Nilsson', confidence: 'Medium', source: 'IFPI' }
+            ];
+        } else if (title.toLowerCase().indexOf('aurora') !== -1) {
+            demoResults = [
+                { isrc: 'SE5E52200147', title: 'Aurora', artist: 'Nordic Collective', confidence: 'High', source: 'IFPI' },
+                { isrc: 'SE5E52200148', title: 'Aurora (Acoustic)', artist: 'Nordic Collective', confidence: 'Medium', source: 'MusicBrainz' }
+            ];
+        } else if (title.toLowerCase().indexOf('nattljus') !== -1) {
+            demoResults = [
+                { isrc: 'SEWM41900312', title: 'Nattljus', artist: 'Polar Ensemble', confidence: 'High', source: 'MusicBrainz' }
+            ];
+        } else {
+            demoResults = [
+                { isrc: 'SE' + Math.random().toString(36).substr(2,10).toUpperCase(), title: title, artist: 'Unknown Artist', confidence: 'Medium', source: 'MusicBrainz' }
+            ];
+        }
+        _searchState[i] = { phase: 'results', selected: null, results: demoResults };
+        renderIssueCards();
+    }
+
+    function selectIsrcResult(i, ri) {
+        if (_searchState[i]) { _searchState[i].selected = ri; renderIssueCards(); }
+    }
+
+    function confirmIsrc(i) {
+        var ss = _searchState[i];
+        if (!ss || ss.selected === null) return;
+        var match = ss.results[ss.selected];
+        var issue = issueList[i];
+        if (currentRows[issue.row_index]) currentRows[issue.row_index].isrc = match.isrc;
+        issue._fixed = true;
+        issue._resolution = {
+            title: 'ISRC identified and applied',
+            fields: { 'ISRC': match.isrc, 'Artist': match.artist, 'Source': match.source, 'Confidence': match.confidence },
+            explanation: 'The recording has been linked to an ISRC based on a user-approved database match.'
+        };
+        fixedCount++;
+        _searchState[i] = { phase: 'idle', results: [], selected: null };
+        renderIssueCards();
+        updateFixedBadge();
+    }
+
+    function applyManualIsrc(i) {
+        var input = document.getElementById('manual-'+i);
+        var val = input ? input.value.trim() : '';
+        if (!val) return;
+        var issue = issueList[i];
+        if (currentRows[issue.row_index]) currentRows[issue.row_index].isrc = val;
+        issue._fixed = true;
+        issue._resolution = {
+            title: 'ISRC identified and applied',
+            fields: { 'ISRC': val, 'Source': 'Manual entry', 'Confidence': 'User-provided' },
+            explanation: 'The recording has been linked to an ISRC based on user-provided information.'
         };
         fixedCount++;
         _searchState[i] = { phase: 'idle', results: [], selected: null };
