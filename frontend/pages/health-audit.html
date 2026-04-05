@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>1. Metadata Health Audit - Roya</title>
+    <style>
+
+        * { box-sizing: border-box; }
+        body { margin: 0; font-family: Inter, Arial, sans-serif; background: #0b1226; color: #e8edff; padding: 24px; }
+        .container { max-width: 660px; margin: 0 auto; }
+        .page-container { background: #111a36; border: 1px solid #253764; border-radius: 14px; padding: 28px; }
+        .back-link { color: #f0b429; text-decoration: none; font-size: 14px; display: inline-block; margin-bottom: 18px; }
+        h1 { margin: 0 0 8px; font-size: 22px; }
+        .desc { color: #a8b5d9; margin-bottom: 20px; font-size: 14px; }
+        .upload-area { border: 1.5px dashed #2c4073; border-radius: 10px; padding: 16px; text-align: center; margin-bottom: 8px; cursor: pointer; transition: border-color 0.2s; }
+        .upload-area:hover { border-color: #5e6dff; }
+        .upload-area input[type="file"] { display: none; }
+        .upload-label { color: #7b8fc4; font-size: 14px; }
+        .file-name { color: #f0b429; font-size: 13px; margin-top: 5px; }
+        .sample-note { font-size: 12px; color: #5a6a9a; text-align: center; margin-bottom: 10px; }
+        .preview { display:none; background:#0d1630; border:1px solid #1e2d52; border-radius:8px; padding:8px 12px; margin-bottom:10px; }
+        button { background: linear-gradient(90deg,#5e6dff,#7c65ff); border: 0; color: white; padding: 11px 14px; border-radius: 10px; font-weight: 600; cursor: pointer; width: 100%; font-size: 15px; }
+        button:disabled { opacity: 0.6; cursor: not-allowed; }
+        .results { margin-top: 20px; display: none; }
+        .loading { text-align: center; color: #7b8fc4; padding: 24px; font-size: 14px; }
+        .error-msg { color: #f87171; background: rgba(239,68,68,0.1); border-radius: 8px; padding: 12px; font-size: 14px; margin-top: 12px; }
+        .section-title { font-size: 13px; font-weight: 600; color: #7b8fc4; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 10px; margin-top: 16px; }
+
+
+        .score-row { display:flex; align-items:center; gap:20px; background:#0f1834; border-radius:12px; padding:18px 20px; margin-bottom:4px; }
+        .score-circle { width:72px; height:72px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:24px; font-weight:800; flex-shrink:0; }
+        .sc-high { background:rgba(34,197,94,.15); border:2px solid #22c55e; color:#22c55e; }
+        .sc-mid  { background:rgba(234,179,8,.15);  border:2px solid #eab308; color:#eab308; }
+        .sc-low  { background:rgba(239,68,68,.15);  border:2px solid #ef4444; color:#ef4444; }
+        .score-label strong { display:block; font-size:16px; color:#e8edff; margin-bottom:3px; }
+        .score-label span { font-size:14px; color:#a8b5d9; }
+        .issue-list { display:flex; flex-direction:column; gap:8px; }
+        .issue-item { display:flex; align-items:center; justify-content:space-between; background:#0f1834; border-radius:8px; padding:10px 14px; font-size:14px; }
+        .issue-track { color:#e8edff; font-weight:500; }
+        .issue-type { color:#a8b5d9; font-size:12px; margin-top:2px; }
+        .badge-high   { background:rgba(239,68,68,.15); color:#f87171; border:1px solid rgba(239,68,68,.3); border-radius:20px; padding:2px 10px; font-size:11px; font-weight:700; }
+        .badge-medium { background:rgba(234,179,8,.15); color:#fbbf24; border:1px solid rgba(234,179,8,.3); border-radius:20px; padding:2px 10px; font-size:11px; font-weight:700; }
+        .no-issues { color:#22c55e; font-size:14px; text-align:center; padding:16px; }
+    
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="page-container">
+        <a href="/" class="back-link">&#8592; Back to Tools</a>
+        <h1>1. Metadata Health Audit</h1>
+        <p class="desc">Checks completeness, missing fields, invalid formats, and overall health score. Column names are auto-detected from your file.</p>
+
+        <div class="upload-area" onclick="document.getElementById('fileInput').click()">
+            <input type="file" id="fileInput" accept=".csv,.json,.txt" onchange="onFileChange(this)">
+            <div class="upload-label">&#128194; Click to upload CSV or JSON (comma, semicolon, or tab)</div>
+            <div class="file-name" id="fileName"></div>
+        </div>
+        <div class="preview" id="preview"></div>
+        <div class="sample-note">No file needed &#8212; click Run to try with built-in sample data</div>
+
+        <button id="runBtn" onclick="runTool()">Run Health Audit</button>
+        <div class="results" id="results"></div>
+        <div class="error-msg" id="errorMsg" style="display:none"></div>
+    </div>
+</div>
+<script>
+    var SAMPLE = [{"title": "Midnight Sun", "isrc": "SE6I12345678", "iswc": "", "ipi": "", "publisher": "Nordic Music AB"}, {"title": "Vinterljus", "isrc": "", "iswc": "T-345678901-2", "ipi": "00123456789", "publisher": ""}, {"title": "Sommarnatt", "isrc": "SE6I87654321", "iswc": "T-111222333-4", "ipi": "00987654321", "publisher": "Global Rights Ltd"}, {"title": "Aurora", "isrc": "", "iswc": "", "ipi": "", "publisher": ""}, {"title": "Nordlys", "isrc": "INVALID", "iswc": "T-999888777-6", "ipi": "00111222333", "publisher": "Stim Publisher"}];
+
+    const COL_MAP = {
+        title:         ['title','work_title','work title','song title','track','track name','song','work','titel','lattitel'],
+        isrc:          ['isrc','isrc_code','isrc code','isrc-code'],
+        ipi:           ['ipi','ipi_number','ipi number','writer_ipi','writer ipi','ipi-nr','ipi nr'],
+        iswc:          ['iswc','iswc_code','iswc code','iswc-code'],
+        publisher:     ['publisher','publisher_name','publisher name','label','forlag','utgivare'],
+        role:          ['role','writer_role','contributor_role','writer role','roll','funktion'],
+        share_percent: ['share_percent','share percent','share%','split_percent','split percent','split%',
+                        'writer_share','writer share','percentage','procent','andel','shares','share']
+    };
+    function normaliseHeaders(headers) {
+        return headers.map(function(h) {
+            var lower = h.toLowerCase().trim();
+            for (var std in COL_MAP) {
+                if (COL_MAP[std].indexOf(lower) !== -1) return std;
+            }
+            return lower;
+        });
+    }
+    function parseFile(text) {
+        text = text.replace(/^\uFEFF/, '').replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+        var lines = text.split('\n').filter(function(l){ return l.trim(); });
+        if (lines.length < 2) return { rows: [], headers: [], raw_headers: [], delim: ',' };
+        var first = lines[0];
+        var semis  = (first.match(/;/g)  || []).length;
+        var commas = (first.match(/,/g)  || []).length;
+        var tabs   = (first.match(/\t/g) || []).length;
+        var delim  = (tabs > semis && tabs > commas) ? '\t' : (semis > commas ? ';' : ',');
+        var raw_headers = first.split(delim).map(function(h){ return h.trim().replace(/^"|"$/g,''); });
+        var headers = normaliseHeaders(raw_headers);
+        var rows = lines.slice(1).map(function(line) {
+            var vals = line.split(delim).map(function(v){ return v.trim().replace(/^"|"$/g,''); });
+            return headers.reduce(function(obj,h,i){ obj[h] = vals[i] || ''; return obj; }, {});
+        });
+        return { rows: rows, headers: headers, raw_headers: raw_headers, delim: delim };
+    }
+    function onFileChange(input) {
+        document.getElementById('fileName').textContent = input.files[0] ? input.files[0].name : '';
+    }
+    function showPreview(result, filename) {
+        var prev = document.getElementById('preview');
+        if (!prev) return;
+        var mapped   = result.headers.filter(function(h){ return COL_MAP.hasOwnProperty(h); });
+        var unmapped = result.raw_headers.filter(function(_,i){ return !COL_MAP.hasOwnProperty(result.headers[i]); });
+        prev.style.display = 'block';
+        prev.innerHTML =
+            '<div style="font-size:12px;color:#7b8fc4;margin-bottom:3px">' + filename +
+            ' &mdash; ' + result.rows.length + ' rows, delimiter: "' + (result.delim === '\t' ? 'TAB' : result.delim) + '"</div>' +
+            '<div style="font-size:12px;color:#22c55e">&#10003; Mapped columns: ' + (mapped.join(', ') || 'none') + '</div>' +
+            (unmapped.length ? '<div style="font-size:12px;color:#fbbf24">&#9888; Unmapped: ' + unmapped.join(', ') + '</div>' : '');
+    }
+    async function getPayload(sampleData) {
+        var file = document.getElementById('fileInput').files[0];
+        if (!file) return { rows: sampleData };
+        var text = await file.text();
+        if (file.name.toLowerCase().endsWith('.json')) {
+            var parsed = JSON.parse(text);
+            var rows = Array.isArray(parsed) ? parsed : (parsed.rows || []);
+            showPreview({ rows: rows, raw_headers: Object.keys(rows[0]||{}), headers: Object.keys(rows[0]||{}), delim: 'json' }, file.name);
+            return { rows: rows };
+        }
+        var result = parseFile(text);
+        showPreview(result, file.name);
+        return { rows: result.rows };
+    }
+
+    async function runTool() {
+        var btn = document.getElementById('runBtn');
+        var resultsDiv = document.getElementById('results');
+        var errorDiv = document.getElementById('errorMsg');
+        btn.disabled = true;
+        errorDiv.style.display = 'none';
+        resultsDiv.style.display = 'block';
+        var _anim = animateLoading(resultsDiv, ['Parsing metadata…','Checking completeness…','Scoring fields…','Generating report…']);
+        try {
+            var payload = await getPayload(SAMPLE);
+            var response = await fetch('/api/health-audit', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(payload)
+            });
+            var data = await response.json();
+            _anim.stop(); renderResults(data);
+        } catch(e) {
+            _anim.stop(); resultsDiv.style.display = 'none';
+            errorDiv.style.display = 'block';
+            errorDiv.textContent = 'Error: ' + e.message;
+        } finally {
+            btn.disabled = false;
+        }
+    }
+
+    function animateLoading(div, msgs) {
+        var i=0;
+        div.style.display='block';
+        div.innerHTML='<div class="loading">'+msgs[0]+'</div>';
+        var t=setInterval(function(){ i=(i+1)%msgs.length; div.innerHTML='<div class="loading">'+msgs[i]+'</div>'; },700);
+        return { stop: function(){ clearInterval(t); } };
+    }
+
+    function renderResults(data) {
+        var score = data.score != null ? data.score : 0;
+        var sc = score >= 80 ? 'sc-high' : score >= 50 ? 'sc-mid' : 'sc-low';
+        var issues = data.issues || [];
+        var issuesHtml = issues.length === 0
+            ? '<div class="no-issues">&#10003; No issues found</div>'
+            : issues.map(function(i) {
+                return '<div class="issue-item"><div><div class="issue-track">' + (i.track||'Unknown') + '</div><div class="issue-type">' + (i.type||'').replace(/_/g,' ') + '</div></div><span class="' + (i.severity==='high'?'badge-high':'badge-medium') + '">' + (i.severity||'medium') + '</span></div>';
+            }).join('');
+        var fixBtn = issues.length > 0
+            ? '<a href="/pages/review.html" style="display:inline-block;margin-top:14px;background:linear-gradient(90deg,#5e6dff,#7c65ff);color:white;padding:10px 20px;border-radius:8px;font-weight:600;font-size:14px;text-decoration:none;">Review & Fix Issues →</a>'
+            : '<a href="/pages/review.html" style="display:inline-block;margin-top:14px;background:rgba(34,197,94,0.12);border:1px solid rgba(34,197,94,0.3);color:#22c55e;padding:10px 20px;border-radius:8px;font-weight:600;font-size:14px;text-decoration:none;">Export Clean CSV →</a>';
+        document.getElementById('results').innerHTML =
+            '<div class="score-row"><div class="score-circle ' + sc + '">' + score + '%</div><div class="score-label"><strong>Health Score</strong><span>' + (data.healthy_tracks != null ? data.healthy_tracks : '-') + ' of ' + (data.total_tracks != null ? data.total_tracks : '-') + ' tracks fully complete</span></div></div>' +
+            '<div class="section-title">Issues (' + issues.length + ')</div><div class="issue-list">' + issuesHtml + '</div>' + fixBtn;
+    }
+    
+</script>
+</body>
+</html>

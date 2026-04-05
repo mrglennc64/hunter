@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Roya · Documents</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background:#0a0a0a;
+            font-family: 'Inter', sans-serif;
+            color: #0f172a;
+        }
+
+        .nav {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 24px 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid #e2e8f0;
+            background: white;
+        }
+
+        .logo {
+            font-weight: 800;
+            font-size: 26px;
+            background: linear-gradient(135deg, #1e1b4b, #4f46e5);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 32px;
+        }
+
+        .nav-links a {
+            color: #334155;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .nav-links a:hover {
+            color: #4f46e5;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 48px 32px;
+        }
+
+        /* Header */
+        .page-header {
+            margin-bottom: 48px;
+        }
+
+        .page-header h1 {
+            font-size: 48px;
+            font-weight: 800;
+            background: linear-gradient(145deg, #0f172a, #2d3a5e);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 16px;
+        }
+
+        .lead {
+            font-size: 18px;
+            color: #475569;
+        }
+
+        /* Document Tabs / Navigation */
+        .doc-tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 40px;
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 16px;
+        }
+
+        .tab-link {
+            padding: 10px 20px;
+            border-radius: 40px;
+            background: white;
+            border: 1px solid #e2e8f0;
+            color: #475569;
+            font-weight: 500;
+            text-decoration: none;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .tab-link:hover,
+        .tab-link.active {
+            background: #eef2ff;
+            border-color: #4f46e5;
+            color: #4f46e5;
+        }
+
+        /* Document Sections */
+        .doc-section {
+            background: white;
+            border-radius: 28px;
+            padding: 40px;
+            margin-bottom: 32px;
+            border: 1px solid #e2e8f0;
+            scroll-margin-top: 80px;
+        }
+
+        .doc-section h2 {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .doc-section h2 i {
+            color: #4f46e5;
+            font-size: 28px;
+        }
+
+        .section-meta {
+            color: #64748b;
+            font-size: 14px;
+            margin-bottom: 32px;
+            display: flex;
+            gap: 24px;
+        }
+
+        /* Two Column Layout (for What We Store) */
+        .storage-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin: 32px 0;
+        }
+
+        .storage-box {
+            background: #f8fafc;
+            border-radius: 20px;
+            padding: 28px;
+        }
+
+        .storage-box.blockchain {
+            background: #0f172a;
+            color: white;
+        }
+
+        .storage-box h3 {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 24px;
+            font-size: 20px;
+        }
+
+        .checklist {
+            list-style: none;
+        }
+
+        .checklist li {
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .check-yes {
+            color: #10b981;
+            width: 24px;
+        }
+
+        .check-no {
+            color: #ef4444;
+            width: 24px;
+        }
+
+        /* Table Styles */
+        .table-container {
+            overflow-x: auto;
+            margin: 32px 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #f8fafc;
+            border-radius: 16px;
+            overflow: hidden;
+        }
+
+        th {
+            background: #eef2ff;
+            padding: 16px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        td {
+            padding: 16px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .check-yes-table {
+            color: #10b981;
+            font-weight: 600;
+        }
+
+        .check-no-table {
+            color: #94a3b8;
+        }
+
+        .footnote {
+            font-size: 14px;
+            color: #64748b;
+            margin-top: 16px;
+            font-style: italic;
+        }
+
+        /* Contact Box */
+        .contact-box {
+            background: #eef2ff;
+            border-radius: 24px;
+            padding: 32px;
+            margin: 48px 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 24px;
+        }
+
+        .contact-box a {
+            background: white;
+            color: #4f46e5;
+            padding: 14px 32px;
+            border-radius: 60px;
+            text-decoration: none;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            border: 1px solid #c7d2fe;
+        }
+
+        .footer {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 32px;
+            border-top: 1px solid #e2e8f0;
+            display: flex;
+            gap: 32px;
+            color: #64748b;
+            flex-wrap: wrap;
+        }
+
+        .footer a {
+            color: #334155;
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            color: #4f46e5;
+        }
+
+        /* Site color scheme overrides */
+        :root {
+            --bg-main: #020b22;
+            --bg-elev: #07142f;
+            --bg-soft: #0b1c3f;
+            --text-main: #e7ecff;
+            --text-dim: #a8b5d9;
+            --line: #1b2c58;
+            --accent: #5e6dff;
+            --accent-2: #f0b429;
+        }
+
+        body {
+            background: radial-gradient(circle at 15% 10%, #0b1f4e 0%, #020b22 45%, #020818 100%);
+            color: var(--text-main);
+        }
+
+        .nav {
+            background: linear-gradient(90deg, #061538, #071a45);
+            border-bottom-color: var(--line);
+        }
+
+        .logo {
+            background: none;
+            -webkit-text-fill-color: #e7ecff;
+            color: #e7ecff;
+        }
+
+        .nav-links a,
+        .lead,
+        .section-meta,
+        td,
+        .footnote,
+        .footer,
+        .footer a {
+            color: var(--text-dim);
+        }
+
+        .nav-links a:hover,
+        .tab-link:hover,
+        .tab-link.active,
+        .doc-section h2 i,
+        .contact-box a {
+            color: var(--accent-2);
+        }
+
+        .tab-link,
+        .doc-section,
+        .table-container table,
+        .contact-box,
+        .footer,
+        .storage-box,
+        .compliance-item,
+        .access-table-wrap,
+        .footnote,
+        .contact-block {
+            background: var(--bg-elev);
+            border-color: var(--line);
+        }
+
+        .storage-box,
+        th,
+        .doc-tabs,
+        .tab-link {
+            background: var(--bg-soft);
+            border-color: var(--line);
+            color: var(--text-main);
+        }
+
+        .doc-section h2,
+        .storage-box h3,
+        .principle-card h3,
+        .compliance-item h4,
+        th {
+            color: var(--text-main);
+        }
+
+        .contact-box a {
+            background: rgba(94, 109, 255, 0.14);
+            border-color: rgba(94, 109, 255, 0.45);
+        }
+
+        .doc-section,
+        .principle-card,
+        .compliance-item,
+        .storage-box,
+        .access-table-wrap,
+        .contact-box {
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.22);
+        }
+
+        .nav-links a:hover,
+        .footer a:hover {
+            color: var(--accent-2);
+        }
+
+        .contact-box a:hover {
+            background: linear-gradient(90deg, #5e6dff, #7c65ff);
+            color: #ffffff;
+            border-color: transparent;
+        }
+
+        @media (max-width: 700px) {
+            .storage-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+<style>
+  html,body{background:#0a0a0a!important;color:#e0e0e0!important;}
+  body>*:not(nav){color:#e0e0e0;}
+  h1,h2,h3,h4,h5,h6{color:#f1f5f9!important;}
+  p,li,td,th,span,div{color:inherit;}
+  a{color:#22d3ee;}
+  a:hover{color:#67e8f9;}
+  /* cards/panels */
+  .card,.panel,.box,[class*="card"],[class*="panel"],[class*="box"]{background:#111!important;border-color:#1e293b!important;}
+  /* inputs */
+  input,textarea,select{background:#111!important;color:#e0e0e0!important;border-color:#334155!important;}
+  /* tables */
+  table{background:#111!important;}
+  tr:nth-child(even){background:#0f172a!important;}
+  th{background:#1e293b!important;color:#94a3b8!important;}
+  /* override white/light backgrounds */
+  [style*="background:#f"],[style*="background: #f"],[style*="background:#F"],[style*="background: #F"],
+  [style*="background:white"],[style*="background: white"],[style*="background:#fff"],[style*="background: #fff"],
+  [style*="background:#FFF"]{background:#111!important;}
+  [style*="color:#1"],[style*="color: #1"],[style*="color:#2"],[style*="color: #2"],[style*="color:#3"],[style*="color: #3"],
+  [style*="color:#4"],[style*="color: #4"],[style*="color:black"],[style*="color: black"]{color:#e0e0e0!important;}
+</style>
+</head>
+<body>
+<nav style="background:#000;border-bottom:2px solid #22d3ee;padding:14px 32px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:9999;font-family:Inter,system-ui,sans-serif;">
+  <a href="/" style="text-decoration:none;"><span style="font-size:22px;font-weight:800;color:#22d3ee;letter-spacing:-0.04em;">ROYA</span></a>
+  <div style="display:flex;align-items:center;gap:20px;font-size:13px;">
+    <a href="/see.html" style="color:#9ca3af;text-decoration:none;white-space:nowrap;">How it Works</a>
+    <a href="/split-verification.html" style="color:#9ca3af;text-decoration:none;white-space:nowrap;">Split Verification</a>
+    <a href="/pages/review.html" style="color:#9ca3af;text-decoration:none;white-space:nowrap;">Metadata Review</a>
+    <div style="display:flex;gap:8px;margin-left:8px;">
+      <a href="/demo.html" style="background:rgba(251,191,36,0.15);color:#fbbf24;border:1px solid rgba(251,191,36,0.4);padding:7px 14px;border-radius:999px;font-weight:700;font-size:12px;text-decoration:none;white-space:nowrap;">🎬 Demo</a>
+      <a href="/live-example.html" style="background:rgba(34,211,238,0.1);color:#22d3ee;border:1px solid rgba(34,211,238,0.4);padding:7px 14px;border-radius:999px;font-weight:700;font-size:12px;text-decoration:none;white-space:nowrap;">🟢 Live</a>
+    </div>
+    <a href="/#pilot" style="background:#22d3ee;color:#000;padding:8px 16px;border-radius:999px;font-weight:700;font-size:12px;text-decoration:none;white-space:nowrap;">Book STIM Pilot</a>
+  </div>
+</nav>
+    <div class="nav">
+        <a href="/" class="logo">Roya</a>
+        <div class="nav-links">
+            <a href="/">Home</a>
+            <a href="/documents" style="color: #4f46e5; font-weight: 600;">Documents</a>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Header -->
+        <div class="page-header">
+            <h1>Documents</h1>
+            <p class="lead">All Roya policies, guides, and legal information in one place.</p>
+        </div>
+
+        <!-- Quick Navigation Tabs -->
+        <div class="doc-tabs">
+            <a href="#terms" class="tab-link">📄 Terms</a>
+            <a href="#privacy-security" class="tab-link">🔒 Privacy & Security</a>
+            <a href="#gdpr" class="tab-link">🇪🇺 GDPR</a>
+            <a href="#how-it-works" class="tab-link">⚙️ How It Works</a>
+            <a href="#what-we-store" class="tab-link">📦 What We Store</a>
+            <a href="#security" class="tab-link">🛡️ Security</a>
+            <a href="#dispute" class="tab-link">⚖️ Dispute</a>
+        </div>
+
+        <!-- 1. TERMS OF SERVICE -->
+        <section id="terms" class="doc-section">
+            <h2><i class="fas fa-file-contract"></i> Terms of Service</h2>
+            <div class="section-meta">
+                <span><i class="fas fa-calendar"></i> Last updated: 15 Feb 2026 · v2.1</span>
+                <span><i class="fas fa-globe"></i> Swedish law</span>
+            </div>
+            <div style="max-height: 400px; overflow-y: auto; padding-right: 16px;">
+                <h3>1. Definitions</h3>
+                <p>"Roya" refers to Roya AB, a Swedish company. "Service" means the Roya verification platform. "Publisher" means the entity using the Service.</p>
+                
+                <h3>2. Eligibility</h3>
+                <p>You must be at least 18 years old and have authority to bind your organization.</p>
+                
+                <h3>3. Verification Service</h3>
+                <p>Roya provides a cryptographic verification layer for music publishing splits. We store only hashes on-chain; all personal data remains with you.</p>
+                
+                <h3>4. Data Ownership</h3>
+                <p>You retain full ownership of all split sheets. Roya claims no intellectual property over your content.</p>
+                
+                <h3>5. Acceptable Use</h3>
+                <p>You agree not to use the Service for illegal purposes or to infringe third-party rights.</p>
+                
+                <h3>6. Fees</h3>
+                <p>Currently free during testnet evaluation. Future fees will be announced with 30 days notice.</p>
+                
+                <h3>7. Limitation of Liability</h3>
+                <p>The Service is provided "AS IS". Roya's total liability is limited to €50 for free users.</p>
+                
+                <h3>8. Governing Law</h3>
+                <p>These Terms are governed by the laws of Sweden. Disputes shall be resolved in Stockholm courts.</p>
+            </div>
+        </section>
+
+        <!-- 2. PRIVACY & SECURITY (Your Full Content) -->
+        <section id="privacy-security" class="doc-section">
+            <h2><i class="fas fa-shield-alt"></i> Privacy & Security</h2>
+            <div class="section-meta">
+                <span><i class="fas fa-check-circle"></i> GDPR compliant · by design, by default</span>
+            </div>
+            
+            <p style="font-size: 18px; margin-bottom: 32px;">Roya is built with privacy-first architecture that separates verification proof from personal data.</p>
+            
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-bottom: 40px;">
+                <div style="background: #f1f5f9; padding: 20px; border-radius: 16px;">
+                    <h4><i class="fas fa-chart-line" style="color: #4f46e5;"></i> Data minimisation</h4>
+                    <p style="color: #334155;">Only verification metadata is stored; all personal data remains with publishers.</p>
+                </div>
+                <div style="background: #f1f5f9; padding: 20px; border-radius: 16px;">
+                    <h4><i class="fas fa-trash-alt" style="color: #4f46e5;"></i> Right to erasure (Art. 17)</h4>
+                    <p style="color: #334155;">Publishers can delete contributor data; anonymous proof remains as audit trail.</p>
+                </div>
+                <div style="background: #f1f5f9; padding: 20px; border-radius: 16px;">
+                    <h4><i class="fas fa-user-tie" style="color: #4f46e5;"></i> Data controller</h4>
+                    <p style="color: #334155;">Publishers remain controller. Roya acts as processor for verification only.</p>
+                </div>
+                <div style="background: #f1f5f9; padding: 20px; border-radius: 16px;">
+                    <h4><i class="fas fa-bullseye" style="color: #4f46e5;"></i> Purpose limitation</h4>
+                    <p style="color: #334155;">Data used solely for split verification, not marketing or other purposes.</p>
+                </div>
+            </div>
+
+            <h3 style="margin: 40px 0 20px;">What we store (and where)</h3>
+            
+            <div class="storage-grid">
+                <!-- Blockchain column -->
+                <div class="storage-box blockchain">
+                    <h3><i class="fas fa-cube"></i> Blockchain (Monad testnet)</h3>
+                    <ul class="checklist">
+                        <li><span class="check-yes"><i class="fas fa-check-circle"></i></span> Verification timestamp</li>
+                        <li><span class="check-yes"><i class="fas fa-check-circle"></i></span> Content hash (cryptographic fingerprint)</li>
+                        <li><span class="check-yes"><i class="fas fa-check-circle"></i></span> Basic statistics (contributor count, total %)</li>
+                        <li style="opacity: 0.6;"><span class="check-no"><i class="fas fa-times-circle"></i></span> NO personal information</li>
+                        <li style="opacity: 0.6;"><span class="check-no"><i class="fas fa-times-circle"></i></span> NO names or payment details</li>
+                    </ul>
+                    <p style="margin-top: 20px; font-size: 14px; color: #a5b4fc;"><i class="fas fa-eye"></i> public but anonymous</p>
+                </div>
+                
+                <!-- Your systems column -->
+                <div class="storage-box" style="background: #f1f5f9;">
+                    <h3><i class="fas fa-server"></i> Your systems (your control)</h3>
+                    <ul class="checklist">
+                        <li><span style="color: #10b981;"><i class="fas fa-check-circle"></i></span> All contributor details</li>
+                        <li><span style="color: #10b981;"><i class="fas fa-check-circle"></i></span> Split percentages per person</li>
+                        <li><span style="color: #10b981;"><i class="fas fa-check-circle"></i></span> Payment calculations</li>
+                        <li><span style="color: #10b981;"><i class="fas fa-check-circle"></i></span> Under your complete control</li>
+                    </ul>
+                    <p style="margin-top: 20px; font-size: 14px; color: #475569;"><i class="fas fa-lock"></i> never shared with Roya</p>
+                </div>
+            </div>
+
+            <h3 style="margin: 40px 0 20px;">🇪🇺 GDPR compliance built‑in</h3>
+            
+            <div style="background: #f8fafc; border-radius: 16px; padding: 28px; margin-bottom: 32px;">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
+                    <div>
+                        <strong>Data minimization</strong><br>
+                        <span style="color: #475569;">Only verification metadata stored</span>
+                    </div>
+                    <div>
+                        <strong>Right to erasure</strong><br>
+                        <span style="color: #475569;">Delete contributor data, keep proof</span>
+                    </div>
+                    <div>
+                        <strong>Data controller</strong><br>
+                        <span style="color: #475569;">Publishers control, Roya processes</span>
+                    </div>
+                    <div>
+                        <strong>Purpose limitation</strong><br>
+                        <span style="color: #475569;">Verification only, no marketing</span>
+                    </div>
+                    <div>
+                        <strong>Secure processing</strong><br>
+                        <span style="color: #475569;">Isolated, encrypted environments</span>
+                    </div>
+                </div>
+            </div>
+
+            <h3 style="margin: 40px 0 20px;">Audit trail · without privacy risk</h3>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 32px; margin-bottom: 32px;">
+                <div style="background: #f1f5f9; padding: 24px; border-radius: 16px;">
+                    <h4 style="color: #10b981; margin-bottom: 16px;">✓ The blockchain proves:</h4>
+                    <ul style="list-style: none;">
+                        <li style="margin-bottom: 12px;"><i class="fas fa-check-circle" style="color: #10b981;"></i> A split was verified</li>
+                        <li style="margin-bottom: 12px;"><i class="fas fa-check-circle" style="color: #10b981;"></i> At a specific time</li>
+                        <li style="margin-bottom: 12px;"><i class="fas fa-check-circle" style="color: #10b981;"></i> With specific characteristics (4 people, 100% total)</li>
+                    </ul>
+                </div>
+                <div style="background: #f1f5f9; padding: 24px; border-radius: 16px;">
+                    <h4 style="color: #64748b; margin-bottom: 16px;">❌ But reveals nothing about:</h4>
+                    <ul style="list-style: none;">
+                        <li style="margin-bottom: 12px;"><i class="fas fa-ban" style="color: #94a3b8;"></i> Who the contributors are</li>
+                        <li style="margin-bottom: 12px;"><i class="fas fa-ban" style="color: #94a3b8;"></i> How much they're receiving</li>
+                        <li style="margin-bottom: 12px;"><i class="fas fa-ban" style="color: #94a3b8;"></i> Which work this relates to</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <p style="font-size: 18px; color: #0f172a; margin-bottom: 40px;">✅ This allows independent verification without compromising privacy.</p>
+
+            <h3 style="margin: 40px 0 20px;">Access control – who can see what</h3>
+            
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Data type</th>
+                            <th>Publishers</th>
+                            <th>STIM*</th>
+                            <th>Roya</th>
+                            <th>Public</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>Contributor names</td><td class="check-yes-table">✓</td><td class="check-yes-table">✓*</td><td class="check-no-table">❌</td><td class="check-no-table">❌</td></tr>
+                        <tr><td>Split percentages</td><td class="check-yes-table">✓</td><td class="check-yes-table">✓*</td><td class="check-no-table">❌</td><td class="check-no-table">❌</td></tr>
+                        <tr><td>Payment amounts</td><td class="check-yes-table">✓</td><td class="check-no-table">❌</td><td class="check-no-table">❌</td><td class="check-no-table">❌</td></tr>
+                        <tr><td>Verification timestamp</td><td class="check-yes-table">✓</td><td class="check-yes-table">✓</td><td class="check-yes-table">✓</td><td class="check-yes-table">✓</td></tr>
+                        <tr><td>Content hash</td><td class="check-yes-table">✓</td><td class="check-yes-table">✓</td><td class="check-yes-table">✓</td><td class="check-yes-table">✓</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <p class="footnote">* Only when publisher submits registration to STIM through normal process. STIM does not have direct access to Roya data. The table indicates what could be shared during standard royalty reporting.</p>
+
+            <h3 style="margin: 40px 0 20px;">Secure processing & isolation</h3>
+            <p style="background: #f1f5f9; padding: 20px; border-radius: 16px;">All verification happens in isolated, encrypted environments. No data shared between publishers. Every tenant isolated.</p>
+        </section>
+
+        <!-- 3. GDPR COMPLIANCE -->
+        <section id="gdpr" class="doc-section">
+            <h2><i class="fas fa-gavel"></i> GDPR Compliance</h2>
+            <div class="section-meta">
+                <span><i class="fas fa-check-circle"></i> Articles 5, 17, 24, 28</span>
+            </div>
+            <p>Roya is designed to help publishers meet their GDPR obligations. Key principles:</p>
+            <ul style="margin: 20px 0 20px 20px;">
+                <li><strong>Article 5:</strong> Data minimization – only hashes stored</li>
+                <li><strong>Article 17:</strong> Right to erasure – delete personal data, keep proof</li>
+                <li><strong>Article 24:</strong> Controller responsibility – you control data</li>
+                <li><strong>Article 28:</strong> Processor obligations – Roya acts as processor</li>
+            </ul>
+            <p>For full details, see <a href="#privacy-security" style="color: #4f46e5;">Privacy & Security</a> section above.</p>
+        </section>
+
+        <!-- 4. HOW VERIFICATION WORKS -->
+        <section id="how-it-works" class="doc-section">
+            <h2><i class="fas fa-check-circle"></i> How Verification Works</h2>
+            <div class="section-meta">
+                <span><i class="fas fa-cube"></i> Monad testnet · Digital notary stamp</span>
+            </div>
+            
+            <div style="background: #f1f5f9; border-radius: 20px; padding: 32px; margin-bottom: 32px; text-align: center;">
+                <i class="fas fa-certificate" style="font-size: 48px; color: #4f46e5; margin-bottom: 16px;"></i>
+                <h3 style="margin-bottom: 8px;">Digital Notary Stamp</h3>
+                <p style="color: #475569;">The blockchain stores only a mathematical proof—like a digital notary stamp. All sensitive data stays with you.</p>
+            </div>
+
+            <h4 style="margin: 32px 0 16px;">In a dispute:</h4>
+            
+            <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 24px;">
+                <div style="display: flex; gap: 16px; margin-bottom: 16px;">
+                    <span style="background: #4f46e5; color: white; padding: 4px 16px; border-radius: 40px; font-weight: 600;">You</span>
+                    <span>"We verified this split on February 15, 2026"</span>
+                </div>
+                <div style="display: flex; gap: 16px; margin-bottom: 16px;">
+                    <span style="background: #e4e4e7; padding: 4px 16px; border-radius: 40px; font-weight: 600;">Other</span>
+                    <span>"No you didn't, we never agreed"</span>
+                </div>
+                <div style="display: flex; gap: 16px;">
+                    <span style="background: #0f172a; color: #a5f3fc; padding: 4px 16px; border-radius: 40px; font-weight: 600;">Blockchain</span>
+                    <span><strong>Verification ID QmXoy...6uco</strong> confirms 4-person split at 100% total, verified at 14:32 UTC</span>
+                </div>
+            </div>
+            
+            <div style="background: #0f172a; color: white; border-radius: 12px; padding: 16px; margin: 24px 0; font-family: monospace;">
+                <i class="fas fa-fingerprint" style="color: #a5f4ff; margin-right: 8px;"></i> QmXoypizjW3WknFiJnKLwHCnL72vedxjQkDDP1mXWo6uco
+            </div>
+            
+            <p>You provide your private records showing the actual names/percentages. Blockchain proves it hasn't been altered since verification.</p>
+        </section>
+
+        <!-- 5. WHAT ROYA STORES -->
+        <section id="what-we-store" class="doc-section">
+            <h2><i class="fas fa-database"></i> What Roya Stores</h2>
+            <div class="storage-grid">
+                <div class="storage-box blockchain">
+                    <h3><i class="fas fa-cube"></i> Blockchain (public)</h3>
+                    <ul class="checklist">
+                        <li>✓ Verification timestamp</li>
+                        <li>✓ Content hash</li>
+                        <li>✓ Contributor count</li>
+                        <li>✓ Total % (100%)</li>
+                        <li>❌ No names</li>
+                        <li>❌ No payment amounts</li>
+                    </ul>
+                </div>
+                <div class="storage-box" style="background: #f1f5f9;">
+                    <h3><i class="fas fa-server"></i> Your system (private)</h3>
+                    <ul class="checklist">
+                        <li>✓ All contributor names</li>
+                        <li>✓ Split percentages</li>
+                        <li>✓ Wallet addresses</li>
+                        <li>✓ Payment amounts</li>
+                        <li>✓ You control access</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- 6. SECURITY OVERVIEW -->
+        <section id="security" class="doc-section">
+            <h2><i class="fas fa-lock"></i> Security Overview</h2>
+            <ul style="margin: 20px 0;">
+                <li><strong>Encryption:</strong> All data encrypted at rest and in transit</li>
+                <li><strong>Isolation:</strong> Multi-tenant isolation, no cross-publisher data access</li>
+                <li><strong>Access control:</strong> Role-based permissions, MFA recommended</li>
+                <li><strong>Audit logging:</strong> All verification attempts recorded</li>
+                <li><strong>Blockchain:</strong> Immutable, tamper-evident storage</li>
+            </ul>
+        </section>
+
+        <!-- 7. DISPUTE RESOLUTION -->
+        <section id="dispute" class="doc-section">
+            <h2><i class="fas fa-scale-balanced"></i> Dispute Resolution</h2>
+            <p>In case of a royalty dispute, Roya provides:</p>
+            <ol style="margin: 20px 0 20px 20px;">
+                <li>On-chain timestamp proving when verification occurred</li>
+                <li>Cryptographic hash matching the original split sheet</li>
+                <li>Immutable record that cannot be altered by any party</li>
+            </ol>
+            <p>The blockchain acts as a neutral third party—no trust required.</p>
+        </section>
+
+        <!-- Contact Box -->
+        <div class="contact-box">
+            <div>
+                <h3 style="margin-bottom: 8px;">Questions?</h3>
+                <p style="color: #1e293b;">We're happy to discuss data processing agreements, sub-processors, or security audits.</p>
+            </div>
+            <a href="mailto:security@roya.se">
+                <i class="fas fa-envelope"></i> security@roya.se
+            </a>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        <span>© Roya AB 2026</span>
+        <a href="/documents">Documents</a>
+        <a href="#privacy-security">Privacy</a>
+        <a href="#terms">Terms</a>
+        <span>Monad Testnet · Chain ID: 10143</span>
+    </div>
+
+    <script>
+        // Highlight active tab on scroll
+        window.addEventListener('scroll', () => {
+            const sections = document.querySelectorAll('.doc-section');
+            const tabs = document.querySelectorAll('.tab-link');
+            
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop - 100;
+                if (pageYOffset >= sectionTop) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            tabs.forEach(tab => {
+                tab.classList.remove('active');
+                if (tab.getAttribute('href') === `#${current}`) {
+                    tab.classList.add('active');
+                }
+            });
+        });
+
+        // Smooth scroll for tabs
+        document.querySelectorAll('.tab-link').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const target = document.querySelector(link.getAttribute('href'));
+                target.scrollIntoView({ behavior: 'smooth' });
+            });
+        });
+    </script>
+</body>
+</html>

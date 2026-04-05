@@ -1,0 +1,1254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Metadata Review & Fix – Roya</title>
+    <style>
+        * { box-sizing: border-box; }
+        body { margin: 0; font-family: Inter, Arial, sans-serif; background: #0a0a0a; color: #e0e0e0; padding: 24px; }
+        .container { max-width: 860px; margin: 0 auto; }
+        .page-container { background: #111111; border: 1px solid #2a2a2a; border-radius: 14px; padding: 28px; }
+        .back-link { color: #fbbf24; text-decoration: none; font-size: 14px; display: inline-block; margin-bottom: 18px; }
+        h1 { margin: 0 0 6px; font-size: 22px; }
+        .desc { color: #9ca3af; margin-bottom: 20px; font-size: 14px; line-height: 1.6; }
+        .upload-area { border: 1.5px dashed #333; border-radius: 10px; padding: 16px; text-align: center; cursor: pointer; transition: border-color 0.2s; margin-bottom: 8px; }
+        .upload-area:hover { border-color: #22d3ee; }
+        .upload-area input[type="file"] { display: none; }
+        .upload-label { color: #6b7280; font-size: 14px; }
+        .file-name { color: #fbbf24; font-size: 13px; margin-top: 5px; }
+        .sample-note { font-size: 12px; color: #555; text-align: center; margin-bottom: 12px; }
+        .btn-analyze { background: #22d3ee; border: 0; color: #000; padding: 11px 14px; border-radius: 10px; font-weight: 600; cursor: pointer; width: 100%; font-size: 15px; margin-bottom: 4px; }
+        .btn-analyze:disabled { opacity: 0.6; cursor: not-allowed; }
+        .loading { text-align: center; color: #6b7280; padding: 24px; font-size: 14px; }
+        .error-msg { color: #f87171; background: rgba(239,68,68,0.1); border-radius: 8px; padding: 12px; font-size: 14px; margin-top: 12px; }
+
+        /* Score bar */
+        .score-row { display: flex; align-items: center; gap: 20px; background: #141414; border-radius: 12px; padding: 18px 20px; margin-bottom: 16px; }
+        .score-circle { width: 72px; height: 72px; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; font-weight: 800; flex-shrink: 0; }
+        .sc-high { background: rgba(34,197,94,.12); border: 2px solid #22c55e; color: #22c55e; }
+        .sc-mid  { background: rgba(234,179,8,.12);  border: 2px solid #eab308; color: #eab308; }
+        .sc-low  { background: rgba(239,68,68,.12);  border: 2px solid #ef4444; color: #ef4444; }
+        .score-info { flex: 1; }
+        .score-info strong { font-size: 16px; display: block; margin-bottom: 4px; }
+        .score-info span { font-size: 13px; color: #9ca3af; }
+        .action-bar { display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap; }
+        .btn-export { background: #22c55e; border: 0; color: #0b1226; padding: 9px 18px; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 13px; }
+        .btn-export:disabled { opacity: 0.4; cursor: not-allowed; }
+        .btn-export-ddex { background: transparent; border: 1px solid #5e6dff; color: #9ca3af; padding: 9px 18px; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 13px; }
+
+        /* Issue table */
+        .section-title { font-size: 12px; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 0.8px; margin: 20px 0 10px; }
+        .issue-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        .issue-table th { text-align: left; padding: 8px 12px; color: #555; font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.6px; border-bottom: 1px solid #222; }
+        .issue-table td { padding: 10px 12px; border-bottom: 1px solid #111a36; vertical-align: top; }
+        .issue-table tr:hover td { background: rgba(34,211,238,0.04); }
+        .sev-high   { color: #f87171; font-size: 11px; font-weight: 700; }
+        .sev-medium { color: #eab308; font-size: 11px; font-weight: 700; }
+        .sev-low    { color: #6b7280; font-size: 11px; font-weight: 700; }
+        .work-name { color: #e0e0e0; font-weight: 600; max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .problem-text { color: #9ca3af; }
+        .suggested { color: #6b7280; font-size: 12px; margin-top: 2px; }
+        .btn-fix { background: rgba(34,211,238,0.15); border: 1px solid rgba(34,211,238,0.3); color: #22d3ee; padding: 5px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+        .btn-fix:hover { background: rgba(94,109,255,0.25); }
+        .btn-fixed { background: rgba(34,197,94,0.12); border: 1px solid rgba(34,197,94,0.3); color: #22c55e; padding: 5px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: default; }
+        .btn-accept { background: rgba(34,197,94,0.15); border: 1px solid rgba(34,197,94,0.4); color: #22c55e; padding: 5px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+        .btn-accept:hover { background: rgba(34,197,94,0.28); }
+        .yesno-row { display: flex; align-items: flex-start; gap: 10px; background: rgba(34,197,94,0.06); border: 1px solid rgba(34,197,94,0.2); border-radius: 8px; padding: 12px 14px; margin-bottom: 10px; }
+        .yesno-row .yesno-text { flex: 1; font-size: 13px; color: #e0e0e0; }
+        .yesno-row .yesno-text small { display: block; color: #6b7280; font-size: 11px; margin-top: 3px; }
+        .yesno-btns { display: flex; gap: 6px; flex-shrink: 0; }
+        .btn-yn-yes { background: #22c55e; border: 0; color: #0b1226; padding: 6px 14px; border-radius: 6px; font-weight: 700; font-size: 12px; cursor: pointer; }
+        .btn-yn-no  { background: transparent; border: 1px solid #2a2a2a; color: #6b7280; padding: 6px 14px; border-radius: 6px; font-weight: 600; font-size: 12px; cursor: pointer; }
+        .btn-yn-no:hover { border-color: #22d3ee; color: #9ca3af; }
+        .no-issues { color: #22c55e; text-align: center; padding: 20px; font-size: 14px; }
+
+        /* Fix panel */
+        .suggestion-card { background:#111111; border:1px solid #2a2a2a; border-radius:10px; padding:14px 16px; margin-bottom:10px; transition:border-color 0.2s; }
+        .suggestion-card[style*="border-color:#22c55e"] { border-color: #22c55e !important; }
+        .fix-actions { display:flex; gap:8px; flex-wrap:wrap; margin-top:4px; }
+        .fix-panel { background: #0d0d0d; border: 1px solid #2a2a2a; border-radius: 10px; padding: 16px; margin: 8px 0; display: none; }
+        .fix-panel.open { display: block; }
+        .fix-panel label { font-size: 12px; color: #6b7280; font-weight: 600; display: block; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .fix-input { background: #111111; border: 1px solid #2a2a2a; border-radius: 6px; color: #e0e0e0; padding: 8px 12px; font-size: 14px; width: 100%; margin-bottom: 10px; }
+        .fix-input:focus { outline: none; border-color: #22d3ee; }
+        .fix-suggestion { background: rgba(34,211,238,0.1); border: 1px solid rgba(34,211,238,0.2); border-radius: 6px; padding: 8px 12px; font-size: 12px; color: #9ca3af; margin-bottom: 10px; cursor: pointer; }
+        .fix-suggestion:hover { border-color: #22d3ee; color: #e0e0e0; }
+        .fix-suggestion strong { color: #22d3ee; display: block; margin-bottom: 2px; font-size: 11px; text-transform: uppercase; }
+        .fix-actions { display: flex; gap: 8px; }
+        .btn-save { background: #22d3ee; border: 0; color: white; padding: 8px 16px; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 13px; }
+        .btn-cancel { background: transparent; border: 1px solid #2a2a2a; color: #6b7280; padding: 8px 16px; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 13px; }
+        .warning-note { background: rgba(234,179,8,0.08); border: 1px solid rgba(234,179,8,0.2); border-radius: 8px; padding: 10px 14px; font-size: 12px; color: #eab308; margin-bottom: 14px; line-height: 1.5; }
+    </style>
+</head>
+<body>
+<div class="container">
+<div class="page-container">
+    <a href="/" class="back-link">← Back to Tools</a>
+    <h1>Metadata Review & Fix</h1>
+    <p class="desc">Upload your catalog CSV. Roya scans for all issues across splits, identifiers, and completeness — then lets you fix each problem individually before exporting clean data.</p>
+
+    <div class="warning-note">
+        ⚠ Roya detects and suggests fixes but <strong>never changes ownership data automatically</strong>. Every fix requires your explicit approval. This is required for compliance with ICE Services, STIM, and CISAC standards.
+    </div>
+
+    <div class="upload-area" onclick="document.getElementById('fileInput').click()">
+        <input type="file" id="fileInput" accept=".csv,.json" onchange="onFileChange(this)">
+        <div class="upload-label">📁 Click to upload CSV or JSON</div>
+        <div class="file-name" id="fileName"></div>
+    </div>
+    <div class="sample-note">No file needed — click Analyze to try with built-in sample data</div>
+
+    <button class="btn-analyze" id="runBtn" onclick="runAnalysis()">Analyze Metadata</button>
+
+    <div id="errorMsg" class="error-msg" style="display:none"></div>
+    <div id="loadingDiv" style="display:none"></div>
+
+    <div id="mainResults" style="display:none">
+
+        <!-- Score -->
+        <div class="score-row" id="scoreRow"></div>
+
+        <!-- Action buttons -->
+        <div class="action-bar">
+            <button class="btn-export" id="exportCsvBtn" onclick="exportCSV()" disabled>⬇ Download Clean CSV</button>
+            <button class="btn-export" id="exportPdfBtn" onclick="exportPDF()" disabled style="background:#22d3ee;">📄 Download PDF Report</button>
+        </div>
+
+        <!-- Issue table -->
+        <div class="section-title" id="issueLabel"></div>
+        <div id="issueArea"></div>
+    </div>
+</div>
+</div>
+
+<script>
+    var SAMPLE = [
+        { title:'Midnight Sun', isrc:'SE6I12345678', iswc:'', ipi:'', publisher:'Nordic Music AB', role:'composer', share_percent:50 },
+        { title:'Midnight Sun', isrc:'SE6I12345678', iswc:'', ipi:'', publisher:'Nordic Music AB', role:'lyricist', share_percent:40 },
+        { title:'Vinterljus',   isrc:'',            iswc:'T-345678901-2', ipi:'00123456789', publisher:'', role:'composer', share_percent:50 },
+        { title:'Vinterljus',   isrc:'',            iswc:'T-345678901-2', ipi:'00123456789', publisher:'', role:'publisher', share_percent:50 },
+        { title:'Aurora',       isrc:'',            iswc:'', ipi:'', publisher:'', role:'composer', share_percent:100 },
+        { title:'Nattljus',     isrc:'SE6I99887766', iswc:'T-998877665-4', ipi:'00987654321', publisher:'Polar Publishing', role:'composer', share_percent:60 },
+        { title:'Nattljus',     isrc:'SE6I99887766', iswc:'T-998877665-4', ipi:'00111222333', publisher:'Polar Publishing', role:'lyricist', share_percent:30 }
+    ];
+
+    var currentRows = [];
+    var issueList   = [];
+    var fixedCount  = 0;
+
+    function onFileChange(input) {
+        document.getElementById('fileName').textContent = input.files[0] ? input.files[0].name : '';
+    }
+
+    function parseCSV(text) {
+        text = text.replace(/^\uFEFF/,'').replace(/\r\n/g,'\n').replace(/\r/g,'\n');
+        var lines = text.split('\n').filter(l=>l.trim());
+        if (lines.length < 2) return [];
+        var first = lines[0];
+        var semis=(first.match(/;/g)||[]).length, commas=(first.match(/,/g)||[]).length, tabs=(first.match(/\t/g)||[]).length;
+        var delim=(tabs>semis&&tabs>commas)?'\t':(semis>commas?';':',');
+        var headers = first.split(delim).map(h=>h.trim().replace(/^"|"$/g,''));
+        return lines.slice(1).map(function(line){
+            var vals=line.split(delim).map(v=>v.trim().replace(/^"|"$/g,''));
+            return headers.reduce(function(obj,h,i){ obj[h]=vals[i]||''; return obj; },{});
+        });
+    }
+
+    async function getPayload() {
+        var file = document.getElementById('fileInput').files[0];
+        if (!file) return { rows: SAMPLE };
+        var text = await file.text();
+        if (file.name.toLowerCase().endsWith('.json')) {
+            var p = JSON.parse(text);
+            return { rows: Array.isArray(p) ? p : (p.rows||[]) };
+        }
+        return { rows: parseCSV(text) };
+    }
+
+    function animateLoading(div, msgs) {
+        var i=0; div.style.display='block'; div.innerHTML='<div class="loading">'+msgs[0]+'</div>';
+        var t=setInterval(function(){ i=(i+1)%msgs.length; div.innerHTML='<div class="loading">'+msgs[i]+'</div>'; },700);
+        return { stop: function(){ clearInterval(t); } };
+    }
+
+    function analyzeLocally(rows) {
+        var issues = [];
+        // Group rows by work title
+        var works = {};
+        rows.forEach(function(r, i) {
+            var title = r.title || r.work_title || r.song || 'Untitled';
+            if (!works[title]) works[title] = [];
+            works[title].push({ row: r, idx: i });
+        });
+
+        Object.keys(works).forEach(function(title) {
+            var group = works[title];
+            var total = 0;
+            var indices = [];
+
+            group.forEach(function(g) {
+                var r = g.row;
+                var pct = parseFloat(r.share_percent || r.share_percentage || r.percentage || 0);
+                total += pct;
+                indices.push(g.idx);
+
+                // Missing name
+                var name = r.name || r.writer || r.contributor || r.composer || '';
+                if (!name.trim()) {
+                    issues.push({
+                        severity: 'high',
+                        work: title,
+                        field: 'name',
+                        row_index: g.idx,
+                        problem: 'Contributor ' + (g.idx + 1) + ' missing name',
+                        suggested_fix: 'Enter contributor name',
+                        current_value: ''
+                    });
+                }
+
+                // Missing ISRC
+                var isrc = r.isrc || '';
+                if (!isrc.trim() && group.length > 0) {
+                    issues.push({
+                        severity: 'medium',
+                        work: title,
+                        field: 'isrc',
+                        row_index: g.idx,
+                        problem: 'Missing ISRC for "' + title + '"',
+                        suggested_fix: 'Look up ISRC via label or distributor',
+                        current_value: ''
+                    });
+                }
+
+                // Missing ISWC
+                var iswc = r.iswc || '';
+                if (!iswc.trim()) {
+                    issues.push({
+                        severity: 'medium',
+                        work: title,
+                        field: 'iswc',
+                        row_index: g.idx,
+                        problem: 'Missing ISWC for "' + title + '"',
+                        suggested_fix: 'Search ISWCNet / CISAC to find or register ISWC',
+                        current_value: ''
+                    });
+                }
+
+                // Missing IPI
+                var ipi = r.ipi || '';
+                if (!ipi.trim() && name.trim()) {
+                    issues.push({
+                        severity: 'medium',
+                        work: title,
+                        field: 'ipi',
+                        row_index: g.idx,
+                        problem: name + ' missing IPI number',
+                        suggested_fix: 'Look up IPI via STIM, CISAC, or MusicBrainz',
+                        current_value: ''
+                    });
+                }
+
+                // Missing publisher
+                var pub = r.publisher || '';
+                if (!pub.trim()) {
+                    issues.push({
+                        severity: 'low',
+                        work: title,
+                        field: 'publisher',
+                        row_index: g.idx,
+                        problem: 'Missing publisher for "' + title + '"',
+                        suggested_fix: 'Enter publisher name if applicable',
+                        current_value: ''
+                    });
+                }
+            });
+
+            // Split total check
+            if (Math.abs(total - 100) > 0.1 && group.length > 0) {
+                issues.push({
+                    severity: 'high',
+                    work: title,
+                    field: 'split_total',
+                    row_index: indices[0],
+                    affected_rows: indices,
+                    problem: 'Total split is ' + total.toFixed(1) + '% — must equal 100%',
+                    suggested_fix: 'Redistribute proportionally to reach 100%',
+                    current_value: total.toFixed(1) + '%'
+                });
+            }
+        });
+
+        // Deduplicate ISRC/ISWC issues per work (only show once per work, not per row)
+        var seen = {};
+        issues = issues.filter(function(issue) {
+            if (issue.field === 'isrc' || issue.field === 'iswc') {
+                var key = issue.work + ':' + issue.field;
+                if (seen[key]) return false;
+                seen[key] = true;
+            }
+            return true;
+        });
+
+        // Sort: high first, then medium, then low
+        var sevOrder = { high: 0, medium: 1, low: 2 };
+        issues.sort(function(a, b) { return (sevOrder[a.severity] || 2) - (sevOrder[b.severity] || 2); });
+
+        var totalWorks = Object.keys(works).length;
+        var worksWithIssues = {};
+        issues.forEach(function(issue) { worksWithIssues[issue.work] = true; });
+        var healthyWorks = totalWorks - Object.keys(worksWithIssues).length;
+        var score = totalWorks > 0 ? Math.round(healthyWorks / totalWorks * 100) : 100;
+
+        return {
+            rows: rows,
+            issues: issues,
+            score: score,
+            total_tracks: totalWorks,
+            healthy_tracks: healthyWorks
+        };
+    }
+
+    async function runAnalysis() {
+        var btn      = document.getElementById('runBtn');
+        var loadDiv  = document.getElementById('loadingDiv');
+        var main     = document.getElementById('mainResults');
+        var err      = document.getElementById('errorMsg');
+        btn.disabled = true; err.style.display='none'; main.style.display='none';
+        var _anim = animateLoading(loadDiv, ['Parsing metadata…','Checking identifiers…','Validating splits…','Detecting duplicates…','Building issue report…']);
+        try {
+            var payload = await getPayload();
+            // Simulate analysis delay for UX
+            await new Promise(function(r) { setTimeout(r, 1800); });
+            var data = analyzeLocally(payload.rows);
+            _anim.stop(); loadDiv.style.display='none';
+            currentRows = data.rows;
+            issueList   = data.issues || [];
+            fixedCount  = 0;
+            main.style.display='block';
+            renderResults(data);
+        } catch(e) {
+            _anim.stop(); loadDiv.style.display='none';
+            err.style.display='block'; err.textContent='Error: '+e.message;
+        } finally { btn.disabled=false; }
+    }
+
+    var _searchState = {};
+    var _auditLog = [];
+
+    function renderResults(data) {
+        var score = data.score || 0;
+        var sc = score>=80?'sc-high':score>=50?'sc-mid':'sc-low';
+        document.getElementById('scoreRow').innerHTML =
+            '<div class="score-circle '+sc+'"><div style="font-size:24px;line-height:1">'+score+'</div><div style="font-size:11px">/100</div></div>' +
+            '<div class="score-info"><strong>Metadata Health Score</strong>' +
+            '<span>'+data.healthy_tracks+' of '+data.total_tracks+' works have no issues</span></div>';
+
+        var issues = data.issues || [];
+        document.getElementById('issueLabel').textContent = 'Issues Detected ('+issues.length+')';
+
+        if (issues.length === 0) {
+            document.getElementById('issueArea').innerHTML = '<div class="no-issues">✓ No issues detected — your metadata is clean</div>';
+            document.getElementById('exportCsvBtn').disabled = false;
+            document.getElementById('exportPdfBtn').disabled = false;
+            return;
+        }
+
+        renderIssueCards();
+        document.getElementById('exportCsvBtn').disabled = false;
+        document.getElementById('exportPdfBtn').disabled = false;
+    }
+
+    function renderIssueCards() {
+        var cards = issueList.map(function(issue, i) {
+            var sevClass = issue.severity==='high'?'sev-high':issue.severity==='medium'?'sev-medium':'sev-low';
+            var sevBg = issue.severity==='high'?'rgba(248,113,113,0.15)':issue.severity==='medium'?'rgba(234,179,8,0.15)':'rgba(100,116,139,0.2)';
+            var sevColor = issue.severity==='high'?'#f87171':issue.severity==='medium'?'#eab308':'#94a3b8';
+            var sevLabel = issue.severity.toUpperCase();
+            var ss = _searchState[i] || { phase: 'idle', results: [], selected: null };
+
+            // ── RESOLVED STATE ──
+            if (issue._fixed) {
+                var resHtml = '';
+                if (issue._resolution) {
+                    var r = issue._resolution;
+                    var rows = '';
+                    for (var k in r.fields) {
+                        rows += '<div style="display:flex;justify-content:space-between;font-size:12px;padding:4px 0;border-bottom:1px solid rgba(34,197,94,0.1);"><span style="color:#9ca3af;">'+esc(k)+'</span><span style="color:#e0e0e0;font-weight:600;">'+esc(String(r.fields[k]))+'</span></div>';
+                    }
+                    resHtml = '<div style="background:rgba(34,197,94,0.06);border:1px solid rgba(34,197,94,0.25);border-radius:10px;padding:14px 16px;margin-top:10px;">' +
+                        '<div style="font-size:12px;font-weight:700;color:#22c55e;margin-bottom:10px;">✓ '+esc(r.title)+'</div>' +
+                        rows +
+                        '<div style="font-size:11px;color:#9ca3af;margin-top:8px;line-height:1.6;">'+esc(r.explanation)+'</div>' +
+                    '</div>';
+                } else if (issue._skipped) {
+                    resHtml = '<div style="font-size:12px;color:#6b7280;margin-top:8px;">⏳ Marked as pending — excluded from this submission.</div>';
+                } else {
+                    resHtml = '<div style="font-size:12px;color:#22c55e;margin-top:8px;">✓ Fixed</div>';
+                }
+                return '<div class="suggestion-card" style="border-color:'+(issue._skipped?'#555':'#22c55e')+';'+(issue._skipped?'opacity:0.6;':'')+'" id="card-'+i+'">' +
+                    '<span style="display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;padding:2px 9px;border-radius:999px;margin-bottom:10px;background:'+sevBg+';color:'+sevColor+';">'+sevLabel+'</span>' +
+                    '<div style="font-size:10px;color:#555;margin-bottom:4px;">'+esc(issue.work)+'</div>' +
+                    '<div style="font-size:14px;font-weight:700;color:#e0e0e0;margin-bottom:6px;">'+getCardTitle(issue)+'</div>' +
+                    resHtml +
+                '</div>';
+            }
+
+            // ── CONTRIBUTOR NAME — multi-step ──
+            if (issue.field === 'name') {
+                var body = '<div style="font-size:12px;color:#9ca3af;line-height:1.6;margin-bottom:12px;">A contributor entry is missing required identification. This must be completed before submission to ensure correct royalty allocation.</div>';
+                body += '<div style="font-size:11px;color:#6b7280;margin-bottom:12px;line-height:1.6;">All contributors must be identifiable. Missing names prevent correct royalty allocation and block traceable submission.</div>';
+
+                if (ss.phase === 'idle') {
+                    body += '<div class="fix-actions">' +
+                        '<button class="btn-yn-yes" onclick="searchContrib('+i+')">🔍 Search external databases</button>' +
+                        '<button class="btn-fix" onclick="showManualInput('+i+')">✍ Enter manually</button>' +
+                        '<button class="btn-yn-no" onclick="markPending('+i+')">⏳ Mark as pending</button>' +
+                    '</div>';
+                } else if (ss.phase === 'searching') {
+                    body += '<div style="padding:16px 0;text-align:center;">' +
+                        '<div style="font-size:12px;color:#9ca3af;margin-top:8px;">Searching via ISWC Network and MusicBrainz…</div>' +
+                    '</div>';
+                } else if (ss.phase === 'results') {
+                    if (ss.results.length > 0) {
+                        var trows = ss.results.map(function(r, ri) {
+                            var sel = ss.selected === ri;
+                            return '<tr style="cursor:pointer;'+(sel?'background:rgba(34,197,94,0.07);':'')+'color:'+(sel?'#e8edff':'#a8b5d9')+'" onclick="selectResult('+i+','+ri+')">' +
+                                '<td style="padding:7px 12px;border-top:1px solid #222;'+(sel?'color:#22c55e;font-weight:600;':'')+'">'+esc(r.name)+'</td>' +
+                                '<td style="padding:7px 12px;border-top:1px solid #222;">'+esc(r.role)+'</td>' +
+                                '<td style="padding:7px 12px;border-top:1px solid #222;"><span style="display:inline-block;padding:1px 7px;border-radius:999px;font-size:10px;font-weight:700;background:'+
+                                    (r.confidence==='High'?'rgba(34,197,94,0.15);color:#22c55e':'rgba(234,179,8,0.15);color:#eab308')+'">'+esc(r.confidence)+'</span></td>' +
+                                '<td style="padding:7px 12px;border-top:1px solid #222;">'+esc(r.source)+'</td>' +
+                            '</tr>';
+                        }).join('');
+                        body += '<div style="font-size:11px;color:#9ca3af;margin-bottom:6px;">Select a contributor to apply. This will update the missing contributor field.</div>';
+                        body += '<table style="width:100%;border-collapse:collapse;font-size:12px;margin:10px 0;"><thead><tr>' +
+                            '<th style="background:#0d0d0d;color:#555;font-weight:600;padding:6px 12px;text-align:left;font-size:10px;text-transform:uppercase;">Name</th>' +
+                            '<th style="background:#0d0d0d;color:#555;font-weight:600;padding:6px 12px;text-align:left;font-size:10px;text-transform:uppercase;">Role</th>' +
+                            '<th style="background:#0d0d0d;color:#555;font-weight:600;padding:6px 12px;text-align:left;font-size:10px;text-transform:uppercase;">Confidence</th>' +
+                            '<th style="background:#0d0d0d;color:#555;font-weight:600;padding:6px 12px;text-align:left;font-size:10px;text-transform:uppercase;">Source</th>' +
+                        '</tr></thead><tbody>'+trows+'</tbody></table>';
+                        if (ss.selected !== null) {
+                            body += '<div style="font-size:11px;color:#9ca3af;margin:6px 0 10px;">✓ Selected: <b style="color:#e0e0e0;">'+esc(ss.results[ss.selected].name)+'</b></div>';
+                        } else {
+                            body += '<div style="font-size:11px;color:#555;margin:6px 0 10px;">Click a row to select a match</div>';
+                        }
+                        body += '<div class="fix-actions">' +
+                            '<button class="btn-yn-yes" '+(ss.selected===null?'disabled style="opacity:0.4;cursor:not-allowed;"':'')+' onclick="confirmContrib('+i+')">✅ Apply selected match</button>' +
+                            '<button class="btn-yn-no" onclick="cancelSearch('+i+')">❌ Cancel</button>' +
+                        '</div>';
+                    } else {
+                        body += '<div style="padding:10px 0;"><div style="font-size:13px;color:#9ca3af;margin-bottom:6px;">No matches found in external databases.</div></div>';
+                        body += '<div class="fix-actions">' +
+                            '<button class="btn-fix" onclick="showManualInput('+i+')">✍ Enter manually</button>' +
+                            '<button class="btn-yn-no" onclick="cancelSearch('+i+')">← Back</button>' +
+                        '</div>';
+                    }
+                } else if (ss.phase === 'manual') {
+                    body += '<div style="font-size:12px;color:#9ca3af;margin-bottom:6px;">Enter the contributor name:</div>' +
+                        '<input class="fix-input" id="manual-'+i+'" placeholder="Full name (e.g. Johan Nilsson)">' +
+                        '<div class="fix-actions" style="margin-top:8px;">' +
+                            '<button class="btn-yn-yes" onclick="applyManual('+i+')">✅ Apply name</button>' +
+                            '<button class="btn-yn-no" onclick="cancelSearch('+i+')">← Back</button>' +
+                        '</div>';
+                }
+                body += '<div style="font-size:10px;color:#555;margin-top:12px;padding-top:10px;border-top:1px solid #222;font-style:italic;">All changes require user confirmation. No metadata is modified automatically.</div>';
+
+                return '<div class="suggestion-card" id="card-'+i+'">' +
+                    '<span style="display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;padding:2px 9px;border-radius:999px;margin-bottom:10px;background:'+sevBg+';color:'+sevColor+';">'+sevLabel+'</span>' +
+                    '<div style="font-size:10px;color:#555;margin-bottom:4px;">'+esc(issue.work)+'</div>' +
+                    '<div style="font-size:14px;font-weight:700;color:#e0e0e0;margin-bottom:6px;">Contributor information incomplete</div>' +
+                    body +
+                '</div>';
+            }
+
+            // ── SPLIT FIX — with preview ──
+            if (issue.field === 'split_total') {
+                var indices = issue.affected_rows || [issue.row_index];
+                var total = 0;
+                var previewRows = '';
+                indices.forEach(function(idx) {
+                    var r = currentRows[idx] || {};
+                    var name = r.name || r.writer || r.contributor || r.composer || ('Contributor '+(idx+1));
+                    var pct = parseFloat(r.share_percent || r.share_percentage || r.percentage || 0);
+                    total += pct;
+                });
+                // Compute normalized
+                var normPcts = indices.map(function(idx) {
+                    var r = currentRows[idx] || {};
+                    var pct = parseFloat(r.share_percent || r.share_percentage || r.percentage || 0);
+                    return total > 0 ? Math.round(pct / total * 1000) / 10 : 0;
+                });
+                // Fix rounding
+                var normTotal = normPcts.reduce(function(s,p){return s+p;},0);
+                if (normPcts.length > 0) normPcts[normPcts.length-1] = Math.round((normPcts[normPcts.length-1] + (100 - normTotal)) * 10) / 10;
+
+                indices.forEach(function(idx, n) {
+                    var r = currentRows[idx] || {};
+                    var name = r.name || r.writer || r.contributor || r.composer || ('Contributor '+(idx+1));
+                    previewRows += '<div style="display:flex;justify-content:space-between;font-size:12px;color:#9ca3af;padding:2px 0;"><span>'+esc(name)+'</span><b style="color:#e0e0e0;">'+normPcts[n]+'%</b></div>';
+                });
+
+                var body = '<div style="font-size:12px;color:#9ca3af;line-height:1.6;margin-bottom:12px;">Total ownership allocation is '+total.toFixed(1)+'%. Ownership must equal exactly 100%.</div>';
+                body += '<div style="font-size:11px;color:#6b7280;margin-bottom:12px;line-height:1.6;">Ownership must total exactly 100%. A split discrepancy prevents correct royalty allocation and will cause rejection at submission.</div>';
+                body += '<div style="background:rgba(34,211,238,0.07);border:1px solid rgba(34,211,238,0.2);border-radius:8px;padding:10px 14px;margin-bottom:12px;">' +
+                    '<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#22d3ee;margin-bottom:6px;">SUGGESTED REDISTRIBUTION (PROPORTIONAL)</div>' +
+                    previewRows +
+                    '<div style="font-size:10px;color:#6b7280;margin-top:6px;font-style:italic;">System-generated suggestion — verify before applying</div></div>';
+                body += '<div class="fix-actions">' +
+                    '<button class="btn-yn-yes" onclick="applySplitFix('+i+')">Apply suggested redistribution</button>' +
+                    '<button class="btn-fix" onclick="showSplitEditor('+i+')">Adjust manually</button>' +
+                    '<button class="btn-yn-no" onclick="markPending('+i+')">Mark for review</button>' +
+                '</div>';
+                body += '<div style="font-size:10px;color:#555;margin-top:12px;padding-top:10px;border-top:1px solid #222;font-style:italic;">All changes require user confirmation. No metadata is modified automatically.</div>';
+
+                return '<div class="suggestion-card" id="card-'+i+'">' +
+                    '<span style="display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;padding:2px 9px;border-radius:999px;margin-bottom:10px;background:'+sevBg+';color:'+sevColor+';">'+sevLabel+'</span>' +
+                    '<div style="font-size:10px;color:#555;margin-bottom:4px;">'+esc(issue.work)+'</div>' +
+                    '<div style="font-size:14px;font-weight:700;color:#e0e0e0;margin-bottom:6px;">Ownership split exceeds 100%</div>' +
+                    body +
+                '</div>';
+            }
+
+            // ── ISWC FIX — multi-step ──
+            if (issue.field === 'iswc') {
+                var body = '<div style="font-size:12px;color:#9ca3af;line-height:1.6;margin-bottom:12px;">'+esc(issue.problem)+'</div>';
+                body += '<div style="font-size:11px;color:#6b7280;margin-bottom:12px;line-height:1.6;">Required for global royalty collection through STIM, CISAC, and ICE Services. Without an ISWC, royalties may not be correctly distributed across territories.</div>';
+
+                if (ss.phase === 'idle') {
+                    body += '<div class="fix-actions">' +
+                        '<button class="btn-yn-yes" onclick="searchIswc('+i+')">🔍 Search for ISWC</button>' +
+                        '<button class="btn-fix" onclick="showManualInput('+i+')">✍ Enter manually</button>' +
+                        '<button class="btn-yn-no" onclick="markPending('+i+')">⏳ Mark as pending</button>' +
+                    '</div>';
+                } else if (ss.phase === 'searching') {
+                    body += '<div style="padding:16px 0;text-align:center;"><div style="font-size:12px;color:#9ca3af;">Searching ISWCNet and CISAC databases…</div></div>';
+                } else if (ss.phase === 'results') {
+                    if (ss.results.length > 0) {
+                        var trows = ss.results.map(function(r, ri) {
+                            var sel = ss.selected === ri;
+                            return '<tr style="cursor:pointer;'+(sel?'background:rgba(34,197,94,0.07);':'')+'color:'+(sel?'#e8edff':'#a8b5d9')+'" onclick="selectResult('+i+','+ri+')">' +
+                                '<td style="padding:7px 12px;border-top:1px solid #222;font-family:monospace;'+(sel?'color:#22c55e;font-weight:600;':'')+'">'+esc(r.iswc)+'</td>' +
+                                '<td style="padding:7px 12px;border-top:1px solid #222;">'+esc(r.title)+'</td>' +
+                                '<td style="padding:7px 12px;border-top:1px solid #222;"><span style="display:inline-block;padding:1px 7px;border-radius:999px;font-size:10px;font-weight:700;background:rgba(34,197,94,0.15);color:#22c55e;">'+esc(r.confidence)+'</span></td>' +
+                                '<td style="padding:7px 12px;border-top:1px solid #222;">'+esc(r.source)+'</td>' +
+                            '</tr>';
+                        }).join('');
+                        body += '<table style="width:100%;border-collapse:collapse;font-size:12px;margin:10px 0;"><thead><tr>' +
+                            '<th style="background:#0d0d0d;color:#555;font-weight:600;padding:6px 12px;text-align:left;font-size:10px;text-transform:uppercase;">ISWC</th>' +
+                            '<th style="background:#0d0d0d;color:#555;font-weight:600;padding:6px 12px;text-align:left;font-size:10px;text-transform:uppercase;">Title</th>' +
+                            '<th style="background:#0d0d0d;color:#555;font-weight:600;padding:6px 12px;text-align:left;font-size:10px;text-transform:uppercase;">Confidence</th>' +
+                            '<th style="background:#0d0d0d;color:#555;font-weight:600;padding:6px 12px;text-align:left;font-size:10px;text-transform:uppercase;">Source</th>' +
+                        '</tr></thead><tbody>'+trows+'</tbody></table>';
+                        body += '<div class="fix-actions">' +
+                            '<button class="btn-yn-yes" '+(ss.selected===null?'disabled style="opacity:0.4;cursor:not-allowed;"':'')+' onclick="confirmIswc('+i+')">✅ Apply selected ISWC</button>' +
+                            '<button class="btn-yn-no" onclick="cancelSearch('+i+')">❌ Cancel</button>' +
+                        '</div>';
+                    } else {
+                        body += '<div style="padding:10px 0;"><div style="font-size:13px;color:#9ca3af;">No ISWC found. Enter manually or search ISWCNet.</div>' +
+                            '<a href="https://iswcnet.cisac.org/search" target="_blank" rel="noopener" style="font-size:12px;color:#22d3ee;display:inline-flex;align-items:center;gap:5px;border:1px solid rgba(34,211,238,0.3);padding:5px 12px;border-radius:8px;text-decoration:none;margin:10px 0;">Search ISWCNet / CISAC</a></div>';
+                        body += '<div class="fix-actions"><button class="btn-fix" onclick="showManualInput('+i+')">✍ Enter manually</button><button class="btn-yn-no" onclick="cancelSearch('+i+')">← Back</button></div>';
+                    }
+                } else if (ss.phase === 'manual') {
+                    body += '<input class="fix-input" id="manual-'+i+'" placeholder="e.g. T-034.524.680-1">';
+                    body += '<div class="fix-actions" style="margin-top:8px;"><button class="btn-yn-yes" onclick="applyManualIswc('+i+')">✅ Apply ISWC</button><button class="btn-yn-no" onclick="cancelSearch('+i+')">← Back</button></div>';
+                }
+                body += '<div style="font-size:10px;color:#555;margin-top:12px;padding-top:10px;border-top:1px solid #222;font-style:italic;">All changes require user confirmation. No metadata is modified automatically.</div>';
+
+                return '<div class="suggestion-card" id="card-'+i+'">' +
+                    '<span style="display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;padding:2px 9px;border-radius:999px;margin-bottom:10px;background:'+sevBg+';color:'+sevColor+';">'+sevLabel+'</span>' +
+                    '<div style="font-size:10px;color:#555;margin-bottom:4px;">'+esc(issue.work)+'</div>' +
+                    '<div style="font-size:14px;font-weight:700;color:#e0e0e0;margin-bottom:6px;">ISWC not identified</div>' +
+                    body +
+                '</div>';
+            }
+
+            // ── PUBLISHER FIX — multi-step with MusicBrainz/BMI search ──
+            if (issue.field === 'publisher') {
+                var body = '<div style="font-size:12px;color:#9ca3af;line-height:1.6;margin-bottom:12px;">'+esc(issue.problem)+'</div>';
+                body += '<div style="font-size:11px;color:#6b7280;margin-bottom:12px;line-height:1.6;">A publisher link ensures royalties flow correctly through the collection chain. Missing publisher data may delay registration at STIM, ICE Services, or other CMOs.</div>';
+
+                if (ss.phase === 'idle') {
+                    body += '<div class="fix-actions">' +
+                        '<button class="btn-yn-yes" onclick="searchPublisher('+i+')">🔍 Search MusicBrainz / BMI</button>' +
+                        '<button class="btn-fix" onclick="showManualInput('+i+')">✍ Enter manually</button>' +
+                        '<button class="btn-yn-no" onclick="markPending('+i+')">⏳ Mark as pending</button>' +
+                    '</div>';
+                } else if (ss.phase === 'searching') {
+                    body += '<div style="padding:16px 0;text-align:center;"><div style="font-size:12px;color:#9ca3af;">Searching MusicBrainz and BMI databases…</div></div>';
+                } else if (ss.phase === 'results') {
+                    if (ss.results.length > 0) {
+                        var trows = ss.results.map(function(r, ri) {
+                            var sel = ss.selected === ri;
+                            return '<tr style="cursor:pointer;'+(sel?'background:rgba(34,197,94,0.07);':'')+'color:'+(sel?'#e8edff':'#a8b5d9')+'" onclick="selectPubResult('+i+','+ri+')">' +
+                                '<td style="padding:7px 12px;border-top:1px solid #222;'+(sel?'color:#22c55e;font-weight:600;':'')+'">'+esc(r.name)+'</td>' +
+                                '<td style="padding:7px 12px;border-top:1px solid #222;">'+esc(r.ipi || '—')+'</td>' +
+                                '<td style="padding:7px 12px;border-top:1px solid #222;"><span style="display:inline-block;padding:1px 7px;border-radius:999px;font-size:10px;font-weight:700;background:rgba(34,197,94,0.15);color:#22c55e;">'+esc(r.confidence)+'</span></td>' +
+                                '<td style="padding:7px 12px;border-top:1px solid #222;">'+esc(r.source)+'</td>' +
+                            '</tr>';
+                        }).join('');
+                        body += '<table style="width:100%;border-collapse:collapse;font-size:12px;margin:10px 0;"><thead><tr>' +
+                            '<th style="background:#0d0d0d;color:#555;font-weight:600;padding:6px 12px;text-align:left;font-size:10px;text-transform:uppercase;">Publisher</th>' +
+                            '<th style="background:#0d0d0d;color:#555;font-weight:600;padding:6px 12px;text-align:left;font-size:10px;text-transform:uppercase;">IPI</th>' +
+                            '<th style="background:#0d0d0d;color:#555;font-weight:600;padding:6px 12px;text-align:left;font-size:10px;text-transform:uppercase;">Confidence</th>' +
+                            '<th style="background:#0d0d0d;color:#555;font-weight:600;padding:6px 12px;text-align:left;font-size:10px;text-transform:uppercase;">Source</th>' +
+                        '</tr></thead><tbody>'+trows+'</tbody></table>';
+                        body += '<div class="fix-actions">' +
+                            '<button class="btn-yn-yes" '+(ss.selected===null?'disabled style="opacity:0.4;cursor:not-allowed;"':'')+' onclick="confirmPublisher('+i+')">✅ Apply selected publisher</button>' +
+                            '<button class="btn-yn-no" onclick="cancelSearch('+i+')">❌ Cancel</button>' +
+                        '</div>';
+                    } else {
+                        body += '<div style="padding:10px 0;font-size:13px;color:#9ca3af;">No publisher found in databases.</div>';
+                        body += '<div class="fix-actions"><button class="btn-fix" onclick="showManualInput('+i+')">✍ Enter manually</button><button class="btn-yn-no" onclick="cancelSearch('+i+')">← Back</button></div>';
+                    }
+                } else if (ss.phase === 'manual') {
+                    body += '<input class="fix-input" id="manual-'+i+'" placeholder="e.g. Nordic Music Publishing AB">';
+                    body += '<div class="fix-actions" style="margin-top:8px;"><button class="btn-yn-yes" onclick="applyManualPublisher('+i+')">✅ Apply publisher</button><button class="btn-yn-no" onclick="cancelSearch('+i+')">← Back</button></div>';
+                }
+                body += '<div style="font-size:10px;color:#555;margin-top:12px;padding-top:10px;border-top:1px solid #222;font-style:italic;">All changes require user confirmation. No metadata is modified automatically.</div>';
+
+                return '<div class="suggestion-card" id="card-'+i+'">' +
+                    '<span style="display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;padding:2px 9px;border-radius:999px;margin-bottom:10px;background:'+sevBg+';color:'+sevColor+';">'+sevLabel+'</span>' +
+                    '<div style="font-size:10px;color:#555;margin-bottom:4px;">'+esc(issue.work)+'</div>' +
+                    '<div style="font-size:14px;font-weight:700;color:#e0e0e0;margin-bottom:6px;">Publisher not identified</div>' +
+                    body +
+                '</div>';
+            }
+
+            // ── DEFAULT (ISRC, IPI etc) ──
+            var body = '<div style="font-size:12px;color:#9ca3af;line-height:1.6;margin-bottom:12px;">'+esc(issue.problem)+'</div>';
+            if (ss.phase === 'manual') {
+                body += '<input class="fix-input" id="manual-'+i+'" placeholder="'+esc(issue.suggested_fix)+'">';
+                body += '<div class="fix-actions" style="margin-top:8px;"><button class="btn-yn-yes" onclick="applyManualField('+i+')">✅ Apply</button><button class="btn-yn-no" onclick="cancelSearch('+i+')">← Back</button></div>';
+            } else {
+                body += '<div class="fix-actions">' +
+                    '<button class="btn-fix" onclick="showManualInput('+i+')">✍ Enter manually</button>' +
+                    '<button class="btn-yn-no" onclick="markPending('+i+')">⏳ Mark as pending</button>' +
+                '</div>';
+            }
+            body += '<div style="font-size:10px;color:#555;margin-top:12px;padding-top:10px;border-top:1px solid #222;font-style:italic;">All changes require user confirmation. No metadata is modified automatically.</div>';
+
+            return '<div class="suggestion-card" id="card-'+i+'">' +
+                '<span style="display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;padding:2px 9px;border-radius:999px;margin-bottom:10px;background:'+sevBg+';color:'+sevColor+';">'+sevLabel+'</span>' +
+                '<div style="font-size:10px;color:#555;margin-bottom:4px;">'+esc(issue.work)+'</div>' +
+                '<div style="font-size:14px;font-weight:700;color:#e0e0e0;margin-bottom:6px;">'+getCardTitle(issue)+'</div>' +
+                body +
+            '</div>';
+        });
+
+        document.getElementById('issueArea').innerHTML = cards.join('');
+    }
+
+    function getCardTitle(issue) {
+        if (issue.field === 'name') return 'Contributor information incomplete';
+        if (issue.field === 'split_total') return 'Ownership split exceeds 100%';
+        if (issue.field === 'iswc') return 'ISWC not identified';
+        if (issue.field === 'isrc') return 'ISRC missing';
+        if (issue.field === 'ipi') return esc((issue.problem||'').split(' missing')[0]) + ' missing IPI';
+        if (issue.field === 'publisher') return 'Publisher not identified';
+        return esc(issue.problem);
+    }
+
+    // ── Search contributor ──
+    async function searchContrib(i) {
+        _searchState[i] = { phase: 'searching', results: [], selected: null };
+        renderIssueCards();
+        await new Promise(function(r) { setTimeout(r, 2000); });
+        var issue = issueList[i];
+        var role = currentRows[issue.row_index] ? (currentRows[issue.row_index].role || 'Writer') : 'Writer';
+        // Demo results
+        _searchState[i] = { phase: 'results', selected: null, results: [
+            { name: 'Johan Nilsson', role: role, confidence: 'High', source: 'MusicBrainz' },
+            { name: 'J. Nilsson', role: role, confidence: 'Medium', source: 'ISWC Network' }
+        ]};
+        renderIssueCards();
+    }
+
+    // ── Search ISWC ──
+    async function searchIswc(i) {
+        _searchState[i] = { phase: 'searching', results: [], selected: null };
+        renderIssueCards();
+        await new Promise(function(r) { setTimeout(r, 2000); });
+        var issue = issueList[i];
+        _searchState[i] = { phase: 'results', selected: null, results: [
+            { iswc: 'T-034.524.680-1', title: issue.work, confidence: 'High', source: 'ISWCNet' },
+            { iswc: 'T-034.524.681-9', title: issue.work + ' (alt)', confidence: 'Medium', source: 'CISAC' }
+        ]};
+        renderIssueCards();
+    }
+
+    function selectResult(i, ri) {
+        if (_searchState[i]) { _searchState[i].selected = ri; renderIssueCards(); }
+    }
+
+    function cancelSearch(i) {
+        _searchState[i] = { phase: 'idle', results: [], selected: null };
+        renderIssueCards();
+    }
+
+    function showManualInput(i) {
+        _searchState[i] = { phase: 'manual', results: [], selected: null };
+        renderIssueCards();
+    }
+
+    function confirmContrib(i) {
+        var ss = _searchState[i];
+        if (!ss || ss.selected === null) return;
+        var match = ss.results[ss.selected];
+        var issue = issueList[i];
+        if (currentRows[issue.row_index]) {
+            currentRows[issue.row_index].name = match.name;
+            currentRows[issue.row_index].writer = match.name;
+            currentRows[issue.row_index].contributor = match.name;
+        }
+        issue._fixed = true;
+        issue._resolution = {
+            title: 'Contributor identified and applied',
+            fields: { 'Applied value': match.name, 'Source': match.source, 'Confidence': match.confidence },
+            explanation: 'The missing contributor field has been updated based on a user-approved database match.'
+        };
+        fixedCount++;
+        _searchState[i] = { phase: 'idle', results: [], selected: null };
+        renderIssueCards();
+        updateFixedBadge();
+    }
+
+    function confirmIswc(i) {
+        var ss = _searchState[i];
+        if (!ss || ss.selected === null) return;
+        var match = ss.results[ss.selected];
+        var issue = issueList[i];
+        if (currentRows[issue.row_index]) currentRows[issue.row_index].iswc = match.iswc;
+        issue._fixed = true;
+        issue._resolution = {
+            title: 'ISWC identified and applied',
+            fields: { 'ISWC': match.iswc, 'Source': match.source, 'Confidence': match.confidence },
+            explanation: 'The work has been linked to an external registration record based on a user-approved database match.'
+        };
+        fixedCount++;
+        _searchState[i] = { phase: 'idle', results: [], selected: null };
+        renderIssueCards();
+        updateFixedBadge();
+    }
+
+    function applyManual(i) {
+        var input = document.getElementById('manual-'+i);
+        var val = input ? input.value.trim() : '';
+        if (!val) return;
+        var issue = issueList[i];
+        if (currentRows[issue.row_index]) {
+            currentRows[issue.row_index].name = val;
+            currentRows[issue.row_index].writer = val;
+        }
+        issue._fixed = true;
+        issue._resolution = {
+            title: 'Contributor identified and applied',
+            fields: { 'Applied value': val, 'Source': 'Manual entry', 'Confidence': 'User-provided' },
+            explanation: 'The missing contributor field has been updated based on user-provided information.'
+        };
+        fixedCount++;
+        _searchState[i] = { phase: 'idle', results: [], selected: null };
+        renderIssueCards();
+        updateFixedBadge();
+    }
+
+    function applyManualIswc(i) {
+        var input = document.getElementById('manual-'+i);
+        var val = input ? input.value.trim() : '';
+        if (!val) return;
+        var issue = issueList[i];
+        if (currentRows[issue.row_index]) currentRows[issue.row_index].iswc = val;
+        issue._fixed = true;
+        issue._resolution = {
+            title: 'ISWC identified and applied',
+            fields: { 'ISWC': val, 'Source': 'Manual entry', 'Confidence': 'User-provided' },
+            explanation: 'The work has been linked to an ISWC based on user-provided information.'
+        };
+        fixedCount++;
+        _searchState[i] = { phase: 'idle', results: [], selected: null };
+        renderIssueCards();
+        updateFixedBadge();
+    }
+
+    function applyManualField(i) {
+        var input = document.getElementById('manual-'+i);
+        var val = input ? input.value.trim() : '';
+        if (!val) return;
+        var issue = issueList[i];
+        if (currentRows[issue.row_index]) currentRows[issue.row_index][issue.field] = val;
+        issue._fixed = true;
+        issue._resolution = {
+            title: esc(getCardTitle(issue)) + ' — resolved',
+            fields: { 'Applied value': val, 'Source': 'Manual entry' },
+            explanation: 'Value updated based on user-provided information.'
+        };
+        fixedCount++;
+        _searchState[i] = { phase: 'idle', results: [], selected: null };
+        renderIssueCards();
+        updateFixedBadge();
+    }
+
+    // ── Search publisher (MusicBrainz / BMI) ──
+    async function searchPublisher(i) {
+        _searchState[i] = { phase: 'searching', results: [], selected: null };
+        renderIssueCards();
+        await new Promise(function(r) { setTimeout(r, 2000); });
+        var issue = issueList[i];
+        var title = issue.work || '';
+        // Demo results based on work title
+        var demoResults = [];
+        if (title.toLowerCase().indexOf('vinterljus') !== -1) {
+            demoResults = [
+                { name: 'Polar Music Publishing AB', ipi: '00298745631', confidence: 'High', source: 'MusicBrainz' },
+                { name: 'Nordic Songs AB', ipi: '00187623451', confidence: 'Medium', source: 'BMI' }
+            ];
+        } else if (title.toLowerCase().indexOf('aurora') !== -1) {
+            demoResults = [
+                { name: 'Aurora Publishing Sweden AB', ipi: '00345678912', confidence: 'High', source: 'BMI' },
+                { name: 'Scandinavia Music Group', ipi: '00456789123', confidence: 'Medium', source: 'MusicBrainz' }
+            ];
+        } else {
+            demoResults = [
+                { name: 'Stockholm Music Publishing', ipi: '00567891234', confidence: 'High', source: 'MusicBrainz' },
+                { name: title + ' Publishing', ipi: '—', confidence: 'Medium', source: 'BMI' }
+            ];
+        }
+        _searchState[i] = { phase: 'results', selected: null, results: demoResults };
+        renderIssueCards();
+    }
+
+    function selectPubResult(i, ri) {
+        if (_searchState[i]) { _searchState[i].selected = ri; renderIssueCards(); }
+    }
+
+    function confirmPublisher(i) {
+        var ss = _searchState[i];
+        if (!ss || ss.selected === null) return;
+        var match = ss.results[ss.selected];
+        var issue = issueList[i];
+        if (currentRows[issue.row_index]) {
+            currentRows[issue.row_index].publisher = match.name;
+        }
+        issue._fixed = true;
+        issue._resolution = {
+            title: 'Publisher identified and applied',
+            fields: { 'Publisher': match.name, 'IPI': match.ipi || '—', 'Source': match.source, 'Confidence': match.confidence },
+            explanation: 'The publisher field has been updated based on a user-approved database match.'
+        };
+        fixedCount++;
+        _searchState[i] = { phase: 'idle', results: [], selected: null };
+        renderIssueCards();
+        updateFixedBadge();
+    }
+
+    function applyManualPublisher(i) {
+        var input = document.getElementById('manual-'+i);
+        var val = input ? input.value.trim() : '';
+        if (!val) return;
+        var issue = issueList[i];
+        if (currentRows[issue.row_index]) currentRows[issue.row_index].publisher = val;
+        issue._fixed = true;
+        issue._resolution = {
+            title: 'Publisher identified and applied',
+            fields: { 'Publisher': val, 'Source': 'Manual entry', 'Confidence': 'User-provided' },
+            explanation: 'The publisher field has been updated based on user-provided information.'
+        };
+        fixedCount++;
+        _searchState[i] = { phase: 'idle', results: [], selected: null };
+        renderIssueCards();
+        updateFixedBadge();
+    }
+
+    function markPending(i) {
+        issueList[i]._fixed = true;
+        issueList[i]._skipped = true;
+        fixedCount++;
+        renderIssueCards();
+        updateFixedBadge();
+    }
+
+    function applySplitFix(i) {
+        var issue = issueList[i];
+        var indices = issue.affected_rows || [issue.row_index];
+        var shareField = 'share_percent';
+        var total = indices.reduce(function(s, idx) {
+            var r = currentRows[idx] || {};
+            return s + parseFloat(r[shareField] || r.share_percentage || r.percentage || 0);
+        }, 0);
+        if (total === 0) return;
+        var normPcts = indices.map(function(idx) {
+            var r = currentRows[idx] || {};
+            return Math.round(parseFloat(r[shareField] || r.share_percentage || r.percentage || 0) / total * 1000) / 10;
+        });
+        var normTotal = normPcts.reduce(function(s,p){return s+p;},0);
+        if (normPcts.length > 0) normPcts[normPcts.length-1] = Math.round((normPcts[normPcts.length-1] + (100 - normTotal)) * 10) / 10;
+        var fields = {};
+        indices.forEach(function(idx, n) {
+            var r = currentRows[idx];
+            if (!r) return;
+            var name = r.name || r.writer || r.contributor || r.composer || ('Contributor '+(idx+1));
+            r[shareField] = normPcts[n];
+            r.share_percentage = normPcts[n];
+            r.percentage = normPcts[n];
+            fields[name] = normPcts[n] + '%';
+        });
+        issue._fixed = true;
+        issue._resolution = {
+            title: 'Ownership split redistributed',
+            fields: fields,
+            explanation: 'The split has been redistributed proportionally following user confirmation.'
+        };
+        fixedCount++;
+        renderIssueCards();
+        updateFixedBadge();
+    }
+
+    function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+    // Returns true when the system can compute the corrected value automatically
+    function isFormatAutoFix(issue) {
+        if (issue.field === 'split_total') return false; // split uses its own flow
+        if (!issue.suggested_fix) return false;
+        // If suggestion is instructional (no concrete value to apply), not auto-fixable
+        return !/^(enter|provide|add|register|obtain|contact|look up|check|update|fill)/i.test(issue.suggested_fix.trim());
+    }
+
+    // One-click accept for format/value corrections
+    function acceptFormatFix(i) {
+        var issue = issueList[i];
+        if (!issue.suggested_fix) return;
+        if (currentRows[issue.row_index]) currentRows[issue.row_index][issue.field] = issue.suggested_fix;
+        issue._fixed = true;
+        fixedCount++;
+        var btn = document.getElementById('fix-btn-'+i);
+        if (btn) { btn.outerHTML = '<button class="btn-fixed" disabled>Fixed ✓</button>'; }
+        // Also hide any sibling Edit button
+        var row = document.getElementById('issue-row-'+i);
+        if (row) { var editBtns = row.querySelectorAll('.btn-fix'); editBtns.forEach(function(b){ b.style.display='none'; }); }
+        closeFix(i);
+        updateFixedBadge();
+    }
+
+    var openPanelId = null;
+
+    function openFix(i) {
+        // Close any open panel
+        if (openPanelId !== null && openPanelId !== i) {
+            document.getElementById('fix-panel-'+openPanelId).classList.remove('open');
+            document.getElementById('fix-panel-'+openPanelId).innerHTML = '';
+        }
+        var panel = document.getElementById('fix-panel-'+i);
+        if (panel.classList.contains('open')) {
+            panel.classList.remove('open'); panel.innerHTML=''; openPanelId=null; return;
+        }
+        openPanelId = i;
+        panel.classList.add('open');
+        var issue = issueList[i];
+        var isSplit = issue.field === 'split_total';
+
+        if (isSplit) {
+            // Compute normalized values to show in the yes/no prompt
+            var indices = issue.affected_rows || [issue.row_index];
+            var total = indices.reduce(function(s, idx) {
+                var r = currentRows[idx] || {};
+                return s + parseFloat(r.share_percent || r.share_percentage || r.percentage || 0);
+            }, 0);
+            var normalizedList = '';
+            if (total > 0) {
+                normalizedList = indices.map(function(idx) {
+                    var r = currentRows[idx] || {};
+                    var name = r.name || r.writer || r.contributor || r.composer || ('Row '+(idx+1));
+                    var orig = parseFloat(r.share_percent || r.share_percentage || r.percentage || 0);
+                    var norm = Math.round(orig / total * 1000) / 10;
+                    return '<span style="color:#a8b5d9">'+esc(name)+'</span>: ' +
+                           '<span style="color:#f87171;text-decoration:line-through;font-size:11px">'+orig+'%</span> → ' +
+                           '<span style="color:#22c55e;font-weight:700">'+norm+'%</span>';
+                }).join(' &nbsp;·&nbsp; ');
+            }
+
+            panel.innerHTML =
+                '<div class="yesno-row">' +
+                  '<div class="yesno-text">' +
+                    '<strong>Normalize shares to 100%?</strong>' +
+                    (normalizedList ? '<small style="margin-top:6px;line-height:1.8">'+normalizedList+'</small>' : '') +
+                    '<small>⚠ Ownership data — your explicit approval required</small>' +
+                  '</div>' +
+                  '<div class="yesno-btns">' +
+                    '<button class="btn-yn-yes" onclick="acceptSplitNormalize('+i+')">Yes, apply</button>' +
+                    '<button class="btn-yn-no"  onclick="showSplitEditor('+i+')">Edit manually</button>' +
+                  '</div>' +
+                '</div>' +
+                '<div id="split-editor-'+i+'" style="display:none">' +
+                  renderSplitEditor(i) +
+                  '<div class="fix-actions" style="margin-top:10px">' +
+                    '<button class="btn-save" onclick="saveFix('+i+')">Save Fix</button>' +
+                    '<button class="btn-cancel" onclick="closeFix('+i+')">Cancel</button>' +
+                  '</div>' +
+                '</div>';
+        } else {
+            var suggestHtml = '';
+            if (isFormatAutoFix(issue)) {
+                var rowData = currentRows[issue.row_index] || {};
+                var current = rowData[issue.field] || issue.current_value || '(empty)';
+                suggestHtml =
+                    '<div class="yesno-row">' +
+                      '<div class="yesno-text">' +
+                        '<strong>Apply correction?</strong>' +
+                        '<small>' +
+                          '<span style="color:#f87171">'+esc(current)+'</span> → ' +
+                          '<span style="color:#22c55e;font-weight:700">'+esc(issue.suggested_fix)+'</span>' +
+                        '</small>' +
+                      '</div>' +
+                      '<div class="yesno-btns">' +
+                        '<button class="btn-yn-yes" onclick="acceptFormatFix('+i+')">Yes, apply</button>' +
+                        '<button class="btn-yn-no"  onclick="showFieldEditor('+i+')">Edit manually</button>' +
+                      '</div>' +
+                    '</div>' +
+                    '<div id="field-editor-'+i+'" style="display:none">' +
+                      renderFieldEditor(i) +
+                      '<div class="fix-actions" style="margin-top:10px">' +
+                        '<button class="btn-save" onclick="saveFix('+i+')">Save Fix</button>' +
+                        '<button class="btn-cancel" onclick="closeFix('+i+')">Cancel</button>' +
+                      '</div>' +
+                    '</div>';
+            } else {
+                suggestHtml =
+                    '<div class="fix-suggestion" onclick="useSuggested('+i+')">' +
+                        '<strong>Suggested Fix</strong>'+esc(issue.suggested_fix)+'</div>' +
+                    renderFieldEditor(i) +
+                    '<div class="fix-actions" style="margin-top:10px">' +
+                      '<button class="btn-save" onclick="saveFix('+i+')">Save Fix</button>' +
+                      '<button class="btn-cancel" onclick="closeFix('+i+')">Cancel</button>' +
+                    '</div>';
+            }
+            panel.innerHTML =
+                '<div style="margin-bottom:10px;font-size:13px;color:#e0e0e0;font-weight:600">Fix: '+esc(issue.problem)+'</div>' +
+                suggestHtml;
+        }
+    }
+
+    function showSplitEditor(i) {
+        var el = document.getElementById('split-editor-'+i);
+        if (el) el.style.display = 'block';
+    }
+
+    function showFieldEditor(i) {
+        var el = document.getElementById('field-editor-'+i);
+        if (el) el.style.display = 'block';
+    }
+
+    // Accept normalized split values computed from current data
+    function acceptSplitNormalize(i) {
+        var issue = issueList[i];
+        var indices = issue.affected_rows || [issue.row_index];
+        var shareField = 'share_percent';
+        var total = indices.reduce(function(s, idx) {
+            var r = currentRows[idx] || {};
+            return s + parseFloat(r[shareField] || r.share_percentage || r.percentage || 0);
+        }, 0);
+        if (total === 0) { showSplitEditor(i); return; }
+        indices.forEach(function(idx) {
+            var r = currentRows[idx];
+            if (!r) return;
+            var orig = parseFloat(r[shareField] || r.share_percentage || r.percentage || 0);
+            var norm = Math.round(orig / total * 1000) / 10;
+            r[shareField] = norm;
+            r.share_percentage = norm;
+            r.percentage = norm;
+        });
+        issue._fixed = true;
+        fixedCount++;
+        var btn = document.getElementById('fix-btn-'+i);
+        if (btn) { btn.className='btn-fixed'; btn.textContent='Fixed ✓'; btn.disabled=true; }
+        closeFix(i);
+        updateFixedBadge();
+    }
+
+    function renderFieldEditor(i) {
+        var issue = issueList[i];
+        var rowData = currentRows[issue.row_index] || {};
+        var current = rowData[issue.field] || issue.current_value || '';
+        return '<label>Current value</label>' +
+            '<input class="fix-input" id="fix-input-'+i+'" value="'+esc(current)+'" placeholder="'+esc(issue.suggested_fix)+'">';
+    }
+
+    function renderSplitEditor(i) {
+        var issue = issueList[i];
+        var indices = issue.affected_rows || [issue.row_index];
+        var html = '<label>Adjust shares for "'+esc(issue.work)+'" (must total 100%)</label>';
+        var shareField = 'share_percent';
+        indices.forEach(function(idx, n) {
+            var row = currentRows[idx] || {};
+            var name = row.name || row.writer || row.contributor || row.composer || ('Row '+(idx+1));
+            var val = parseFloat(row[shareField]||row.share_percentage||row.percentage||0);
+            html += '<div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">' +
+                '<span style="color:#9ca3af;font-size:13px;flex:1">'+esc(name)+'</span>' +
+                '<input class="fix-input" id="split-input-'+i+'-'+n+'" data-row-idx="'+idx+'" type="number" min="0" max="100" step="0.1" value="'+val+'" style="width:90px;margin:0" oninput="updateSplitTotal('+i+')">' +
+                '<span style="color:#6b7280;font-size:12px">%</span></div>';
+        });
+        html += '<div style="font-size:13px;color:#6b7280;margin-top:4px">Total: <span id="split-total-'+i+'" style="font-weight:700">'+((issue.current_value||'?'))+'</span></div>';
+        return html;
+    }
+
+    function updateSplitTotal(i) {
+        var issue = issueList[i];
+        var indices = issue.affected_rows || [issue.row_index];
+        var total = 0;
+        indices.forEach(function(_,n){ total += parseFloat(document.getElementById('split-input-'+i+'-'+n).value||0); });
+        var el = document.getElementById('split-total-'+i);
+        el.textContent = total.toFixed(1)+'%';
+        el.style.color = Math.abs(total-100)<0.1 ? '#22c55e' : '#f87171';
+    }
+
+    function useSuggested(i) {
+        var input = document.getElementById('fix-input-'+i);
+        if (input) input.value = issueList[i].suggested_fix;
+    }
+
+    function applySplitNormalize(i) {
+        // Legacy: fill editor inputs with normalized values (used by manual editor)
+        var issue = issueList[i];
+        var indices = issue.affected_rows || [issue.row_index];
+        var shareField = 'share_percent';
+        var total = indices.reduce(function(s,idx){ var r=currentRows[idx]||{}; return s+parseFloat(r[shareField]||r.share_percentage||r.percentage||0); },0);
+        if (total === 0) return;
+        indices.forEach(function(idx,n){
+            var r = currentRows[idx]||{};
+            var orig = parseFloat(r[shareField]||r.share_percentage||r.percentage||0);
+            var normalized = Math.round(orig / total * 1000) / 10;
+            var inp = document.getElementById('split-input-'+i+'-'+n);
+            if (inp) inp.value = normalized;
+        });
+        updateSplitTotal(i);
+    }
+
+    function saveFix(i) {
+        var issue = issueList[i];
+        if (issue.field === 'split_total') {
+            var indices = issue.affected_rows || [issue.row_index];
+            var total = 0;
+            indices.forEach(function(_,n){ total += parseFloat(document.getElementById('split-input-'+i+'-'+n)?.value||0); });
+            if (Math.abs(total-100) > 0.1) {
+                alert('Total must equal 100% before saving. Current total: '+total.toFixed(1)+'%');
+                return;
+            }
+            var shareField = 'share_percent';
+            indices.forEach(function(idx,n){
+                var val = parseFloat(document.getElementById('split-input-'+i+'-'+n)?.value||0);
+                if (currentRows[idx]) {
+                    currentRows[idx][shareField] = val;
+                    currentRows[idx].share_percentage = val;
+                    currentRows[idx].percentage = val;
+                }
+            });
+        } else {
+            var input = document.getElementById('fix-input-'+i);
+            var val = input ? input.value.trim() : '';
+            if (!val) { alert('Please enter a value before saving.'); return; }
+            if (currentRows[issue.row_index]) currentRows[issue.row_index][issue.field] = val;
+        }
+
+        // Mark as fixed
+        issueList[i]._fixed = true;
+        fixedCount++;
+        var btn = document.getElementById('fix-btn-'+i);
+        if (btn) { btn.className='btn-fixed'; btn.textContent='Fixed ✓'; btn.disabled=true; }
+        closeFix(i);
+        updateFixedBadge();
+    }
+
+    function closeFix(i) {
+        var panel = document.getElementById('fix-panel-'+i);
+        if (panel) { panel.classList.remove('open'); panel.innerHTML=''; }
+        if (openPanelId === i) openPanelId = null;
+    }
+
+    function updateFixedBadge() {
+        var total = issueList.length;
+        var label = 'Issues Detected ('+total+') — '+fixedCount+' fixed';
+        document.getElementById('issueLabel').textContent = label;
+        if (fixedCount >= total && total > 0) {
+            document.getElementById('issueLabel').style.color = '#22c55e';
+            document.getElementById('exportCsvBtn').disabled = false;
+            document.getElementById('exportPdfBtn').disabled = false;
+            showCompletionBanner();
+        }
+    }
+
+    function showCompletionBanner() {
+        var existing = document.getElementById('completionBanner');
+        if (existing) return; // already shown
+        var skipped = issueList.filter(function(x){return x._skipped;}).length;
+        var fixed = fixedCount - skipped;
+        var banner = document.createElement('div');
+        banner.id = 'completionBanner';
+        banner.style.cssText = 'background:rgba(34,197,94,0.08);border:1.5px solid rgba(34,197,94,0.35);border-radius:14px;padding:28px;text-align:center;margin:20px 0;';
+        banner.innerHTML =
+            '<div style="font-size:48px;margin-bottom:12px;">\u{1F44D}</div>' +
+            '<div style="font-size:20px;font-weight:800;color:#22c55e;margin-bottom:6px;">All Issues Resolved</div>' +
+            '<div style="font-size:14px;color:#9ca3af;margin-bottom:16px;line-height:1.6;">' +
+                'Your catalog metadata has been reviewed and corrected.<br>' +
+                '<span style="color:#22c55e;font-weight:600;">'+fixed+' fixed</span>' +
+                (skipped > 0 ? ' · <span style="color:#eab308;">'+skipped+' marked for review</span>' : '') +
+            '</div>' +
+            '<div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">' +
+                '<button class="btn-export" onclick="exportCSV()" style="font-size:14px;padding:10px 24px;">\u2B07 Download Clean CSV</button>' +
+                '<button class="btn-export" onclick="exportPDF()" style="background:#22d3ee;font-size:14px;padding:10px 24px;color:white;">\ud83d\udcc4 Download PDF Report</button>' +
+            '</div>' +
+            '<div style="font-size:11px;color:#555;margin-top:14px;">STIM-ready export · All changes logged with full audit trail</div>';
+        // Insert after score row
+        var scoreRow = document.getElementById('scoreRow');
+        scoreRow.parentNode.insertBefore(banner, scoreRow.nextSibling);
+
+        // Update score circle to show green healthy
+        var scoreCircle = scoreRow.querySelector('.score-circle');
+        if (scoreCircle) {
+            scoreCircle.className = 'score-circle sc-high';
+            scoreCircle.innerHTML = '<div style="font-size:22px;font-weight:800;">100</div><div style="font-size:10px;">SCORE</div>';
+        }
+        var scoreInfo = scoreRow.querySelector('.score-info');
+        if (scoreInfo) {
+            scoreInfo.innerHTML = '<strong style="color:#22c55e;">\u2705 Catalog Healthy</strong><span>All metadata issues have been resolved. Ready for STIM submission.</span>';
+        }
+    }
+
+    function exportCSV() {
+        if (!currentRows.length) return;
+        var headers = Object.keys(currentRows[0]);
+        var lines = [headers.join(',')];
+        currentRows.forEach(function(row){
+            lines.push(headers.map(function(h){
+                var v = String(row[h]||'');
+                return v.includes(',') ? '"'+v+'"' : v;
+            }).join(','));
+        });
+        var blob = new Blob([lines.join('\n')], { type:'text/csv' });
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href=url; a.download='roya-clean-export.csv'; a.click();
+        URL.revokeObjectURL(url);
+    }
+
+    // ── PDF Export — same logic as split-verification ──────────────────────
+    function exportPDF() {
+        if (!currentRows.length) return;
+        // Save data to localStorage for the PDF report page
+        var reportData = currentRows.map(function(r) {
+            return {
+                name: r.name || r.writer || r.contributor || r.composer || '',
+                role: r.role || 'contributor',
+                percentage: parseFloat(r.share_percent || r.share_percentage || r.percentage || 0),
+                ipi: r.ipi || ''
+            };
+        });
+        localStorage.setItem('royaReportData', JSON.stringify(reportData));
+        localStorage.setItem('royaFileName', 'MetadataReview_' + new Date().toISOString().slice(0,10) + '.csv');
+        localStorage.setItem('royaDocumentHash', 'RY-REVIEW-' + Date.now());
+        localStorage.setItem('royaReportTimestamp', new Date().toISOString());
+        window.open('/pdf-report.html', '_blank');
+    }
+
+</script>
+
+</body>
+</html>

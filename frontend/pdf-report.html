@@ -1,0 +1,1066 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Roya • Rights Verification Report</title>
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #ffffff;
+            display: flex;
+            justify-content: center;
+            padding: 40px 20px;
+        }
+        
+        /* Navigation */
+        .report-nav {
+            max-width: 1000px;
+            width: 100%;
+            margin: 0 auto 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: white;
+            padding: 16px 24px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        
+        .report-nav .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+        }
+        
+        .report-nav .logo-icon {
+            background: #2B6F4B;
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: white;
+        }
+        
+        .report-nav .logo-text {
+            font-weight: 600;
+            color: #1A202C;
+        }
+        
+        .report-nav button {
+            background: transparent;
+            border: 1px solid #E2E8F0;
+            padding: 8px 16px;
+            border-radius: 40px;
+            font-size: 14px;
+            cursor: pointer;
+            margin-left: 8px;
+            transition: all 0.2s;
+        }
+        
+        .report-nav button:hover {
+            border-color: #2B6F4B;
+            color: #2B6F4B;
+        }
+        
+        .report-nav .btn-primary {
+            background: #2B6F4B;
+            border-color: #2B6F4B;
+            color: white;
+        }
+        
+        .report-nav .btn-primary:hover {
+            background: #1E4F36;
+        }
+        
+        /* Enterprise Report Container */
+        .report-container {
+            max-width: 1000px;
+            width: 100%;
+            background: white;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            padding: 48px;
+            font-family: 'Inter', sans-serif;
+            border-radius: 16px;
+        }
+        
+        /* Header */
+        .report-header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 24px;
+            border-bottom: 2px solid #E2E8F0;
+        }
+        
+        .report-header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            color: #1A202C;
+            margin-bottom: 8px;
+        }
+        
+        .report-header .subhead {
+            color: #4A5568;
+            font-size: 16px;
+        }
+        
+        /* Identity Bar */
+        .identity-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 24px;
+            background: #F8FAFC;
+            border-radius: 12px;
+            padding: 20px 24px;
+            margin-bottom: 32px;
+            border: 1px solid #E2E8F0;
+        }
+        
+        .identity-item {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .identity-label {
+            font-size: 12px;
+            color: #718096;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .identity-value {
+            font-weight: 600;
+            color: #1A202C;
+            font-size: 16px;
+            margin-top: 4px;
+        }
+        
+        .identity-value.verified {
+            color: #2B6F4B;
+        }
+        
+        .identity-badge {
+            background: #DEF7E5;
+            color: #1E4F36;
+            padding: 4px 12px;
+            border-radius: 40px;
+            font-size: 14px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        /* Document Info Section */
+        .section {
+            margin-bottom: 40px;
+        }
+        
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1A202C;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .section-title i {
+            color: #2B6F4B;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            background: #F8FAFC;
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid #E2E8F0;
+        }
+        
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #E2E8F0;
+        }
+        
+        .info-row:last-child {
+            border-bottom: none;
+        }
+        
+        .info-label {
+            color: #718096;
+            font-size: 14px;
+        }
+        
+        .info-value {
+            font-weight: 500;
+            color: #1A202C;
+            font-size: 14px;
+        }
+        
+        /* Verification Results Card */
+        .verification-card {
+            background: #F0FDF4;
+            border: 2px solid #9AE6B4;
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 32px;
+        }
+        
+        .verification-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+        
+        .verification-icon {
+            width: 48px;
+            height: 48px;
+            background: #2B6F4B;
+            border-radius: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+        }
+        
+        .verification-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1E4F36;
+        }
+        
+        .verification-sub {
+            color: #2B6F4B;
+            font-size: 14px;
+        }
+        
+        .verification-list {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+        
+        .verification-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #1A202C;
+            font-size: 14px;
+        }
+        
+        .verification-item i {
+            color: #2B6F4B;
+        }
+        
+        /* Blockchain Data - Minimal/Collapsible */
+        .blockchain-data {
+            background: #F8FAFC;
+            border: 1px solid #E2E8F0;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 32px;
+        }
+        
+        .blockchain-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+        }
+        
+        .blockchain-header span {
+            font-weight: 600;
+            color: #1A202C;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .blockchain-header i {
+            color: #2B6F4B;
+        }
+        
+        .blockchain-content {
+            margin-top: 16px;
+            display: none;
+        }
+        
+        .blockchain-content.expanded {
+            display: block;
+        }
+        
+        .blockchain-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #E2E8F0;
+            font-size: 13px;
+        }
+        
+        .blockchain-row:last-child {
+            border-bottom: none;
+        }
+        
+        .blockchain-label {
+            color: #718096;
+            font-family: monospace;
+        }
+        
+        .blockchain-value {
+            color: #1A202C;
+            font-family: monospace;
+        }
+        
+        /* Rights Holder Data */
+        .rights-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            background: #F8FAFC;
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid #E2E8F0;
+            margin-bottom: 32px;
+        }
+        
+        .rights-item {
+            text-align: center;
+        }
+        
+        .rights-number {
+            font-size: 24px;
+            font-weight: 700;
+            color: #2B6F4B;
+        }
+        
+        .rights-label {
+            font-size: 13px;
+            color: #718096;
+            margin-top: 4px;
+        }
+        
+        /* Audit Trail */
+        .audit-trail {
+            background: #F8FAFC;
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid #E2E8F0;
+            margin-bottom: 32px;
+        }
+        
+        .audit-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #E2E8F0;
+        }
+        
+        .audit-row:last-child {
+            border-bottom: none;
+        }
+        
+        /* Legal Statement */
+        .legal-statement {
+            background: #F8FAFC;
+            border-left: 4px solid #2B6F4B;
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 32px;
+        }
+        
+        .legal-statement h3 {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1A202C;
+            margin-bottom: 16px;
+        }
+        
+        .legal-statement p {
+            color: #4A5568;
+            font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: 16px;
+        }
+        
+        .legal-statement small {
+            color: #718096;
+            font-size: 12px;
+            display: block;
+        }
+        
+        /* Data Protection */
+        .data-protection {
+            background: #F8FAFC;
+            border: 1px solid #E2E8F0;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 32px;
+            font-size: 13px;
+            color: #4A5568;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .data-protection i {
+            color: #2B6F4B;
+            font-size: 20px;
+        }
+        
+        /* Flow Diagram */
+        .flow-diagram {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin: 32px 0;
+            flex-wrap: wrap;
+        }
+        
+        .flow-item {
+            background: #F8FAFC;
+            padding: 8px 16px;
+            border-radius: 40px;
+            border: 1px solid #E2E8F0;
+            font-size: 13px;
+        }
+        
+        .flow-item.confirmed {
+            background: #DEF7E5;
+            border-color: #9AE6B4;
+            color: #1E4F36;
+        }
+        
+        .flow-arrow {
+            color: #CBD5E0;
+        }
+        
+        /* Digital Seal */
+        .digital-seal {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            margin-top: 40px;
+            padding-top: 24px;
+            border-top: 2px solid #E2E8F0;
+        }
+        
+        .seal {
+            width: 64px;
+            height: 64px;
+            background: #2B6F4B;
+            border-radius: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 32px;
+        }
+        
+        .seal-text {
+            font-weight: 700;
+            color: #1A202C;
+        }
+        
+        .seal-sub {
+            color: #718096;
+            font-size: 13px;
+        }
+        
+        /* System Authentication */
+        .auth-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 32px;
+            padding-top: 16px;
+            border-top: 1px solid #E2E8F0;
+            font-size: 13px;
+            color: #718096;
+        }
+        
+        .auth-footer i {
+            color: #2B6F4B;
+        }
+        
+        /* Contributor Table */
+        .contributor-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        
+        .contributor-table th {
+            text-align: left;
+            padding: 12px 8px;
+            color: #718096;
+            font-weight: 500;
+            font-size: 13px;
+            border-bottom: 2px solid #E2E8F0;
+        }
+        
+        .contributor-table td {
+            padding: 12px 8px;
+            border-bottom: 1px solid #E2E8F0;
+            font-size: 14px;
+        }
+        
+        .contributor-table tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .role-badge {
+            background: #F1F5F9;
+            padding: 4px 8px;
+            border-radius: 40px;
+            font-size: 12px;
+            color: #4A5568;
+        }
+        
+        .text-right {
+            text-align: right;
+        }
+        
+        .font-mono {
+            font-family: monospace;
+            font-size: 13px;
+        }
+        
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+        
+        .loading-overlay.active {
+            display: flex;
+        }
+        
+        .loading-spinner {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            text-align: center;
+        }
+        
+        .loading-spinner i {
+            font-size: 40px;
+            color: #2B6F4B;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* SMPT Shield seal */
+        .smpt-seal {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            filter: drop-shadow(0 4px 12px rgba(0,0,0,0.15));
+        }
+        
+        @media print {
+            .report-nav, .loading-overlay {
+                display: none;
+            }
+            body {
+                background: white;
+                padding: 0;
+            }
+            .report-container {
+                box-shadow: none;
+                padding: 0.5in;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner">
+            <i class="fas fa-spinner fa-pulse"></i>
+            <p style="margin-top: 16px; font-weight: 500;">Generating PDF...</p>
+        </div>
+    </div>
+
+    <div style="max-width: 1000px; width: 100%;">
+        <!-- Navigation -->
+        <div class="report-nav">
+            <div class="logo" onclick="window.location.href='index.html'">
+                <div class="logo-icon">R</div>
+                <span class="logo-text">Roya</span>
+            </div>
+            <div>
+                <button onclick="downloadAsPDF()">
+                    <i class="fas fa-download"></i> Download PDF
+                </button>
+                <button onclick="window.print()">
+                    <i class="fas fa-print"></i> Print
+                </button>
+                <button class="btn-primary" onclick="window.location.href='/split-verification.html'">
+                    <i class="fas fa-arrow-left"></i> Back to Workflow
+                </button>
+            </div>
+        </div>
+
+        <!-- Main Report -->
+        <div class="report-container" id="reportContent">
+            <!-- Header -->
+            <div class="report-header">
+                <h1>ROYA — RIGHTS VERIFICATION REPORT</h1>
+                <div class="subhead">Cryptographic proof of document integrity and timestamp authenticity</div>
+            </div>
+
+            <!-- Identity Bar -->
+            <div class="identity-bar">
+                <div class="identity-item">
+                    <span class="identity-label">Verification Status</span>
+                    <span class="identity-badge">
+                        <i class="fas fa-check-circle"></i> VERIFIED
+                    </span>
+                </div>
+                <div class="identity-item">
+                    <span class="identity-label">Verification ID</span>
+                    <span class="identity-value" id="verificationId">RY-2026-02-101</span>
+                </div>
+                <div class="identity-item">
+                    <span class="identity-label">Generated</span>
+                    <span class="identity-value" id="generatedDate">Feb 14, 2026</span>
+                </div>
+                <div class="identity-item">
+                    <span class="identity-label">Organization</span>
+                    <span class="identity-value">Roya Platform</span>
+                </div>
+                <div class="identity-item">
+                    <span class="identity-label">Environment</span>
+                    <span class="identity-value">Production</span>
+                </div>
+            </div>
+
+            <!-- Document Information -->
+            <div class="section">
+                <div class="section-title">
+                    <i class="fas fa-file-alt"></i>
+                    Document Information
+                </div>
+                <div class="info-grid">
+                    <div class="info-row">
+                        <span class="info-label">Document Name</span>
+                        <span class="info-value" id="fileName">SplitSheet_Mar2026.pdf</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Document Type</span>
+                        <span class="info-value">Music Rights Agreement</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">File Size</span>
+                        <span class="info-value" id="fileSize">1.2 MB</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Upload Date</span>
+                        <span class="info-value" id="uploadDate">Feb 14, 2026</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Submitted By</span>
+                        <span class="info-value">Verified Rights Holder</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Verification Results - Strong Visual Card -->
+            <div class="verification-card">
+                <div class="verification-header">
+                    <div class="verification-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div>
+                        <div class="verification-title">Document Verified</div>
+                        <div class="verification-sub">Cryptographic integrity confirmed</div>
+                    </div>
+                </div>
+                <div class="verification-list">
+                    <div class="verification-item">
+                        <i class="fas fa-check-circle"></i>
+                        <span>File integrity confirmed</span>
+                    </div>
+                    <div class="verification-item">
+                        <i class="fas fa-check-circle"></i>
+                        <span>Timestamp authenticity validated</span>
+                    </div>
+                    <div class="verification-item">
+                        <i class="fas fa-check-circle"></i>
+                        <span>Blockchain fingerprint matched</span>
+                    </div>
+                    <div class="verification-item">
+                        <i class="fas fa-check-circle"></i>
+                        <span>No tampering detected</span>
+                    </div>
+                    <div class="verification-item">
+                        <i class="fas fa-check-circle"></i>
+                        <span>Rights record verified</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Blockchain Verification Data (Collapsible) -->
+            <div class="blockchain-data">
+                <div class="blockchain-header" onclick="toggleBlockchain()">
+                    <span>
+                        <i class="fas fa-link"></i>
+                        Blockchain Verification Data
+                    </span>
+                    <i class="fas fa-chevron-down" id="toggleIcon"></i>
+                </div>
+                <div class="blockchain-content" id="blockchainContent">
+                    <div class="blockchain-row">
+                        <span class="blockchain-label">Blockchain Network</span>
+                        <span class="blockchain-value">Polygon / Ethereum L2</span>
+                    </div>
+                    <div class="blockchain-row">
+                        <span class="blockchain-label">Content Identifier (CID)</span>
+                        <span class="blockchain-value" id="cidValue">bafkreigh2akiscail...</span>
+                    </div>
+                    <div class="blockchain-row">
+                        <span class="blockchain-label">SHA-256 File Hash</span>
+                        <span class="blockchain-value" id="hashValue">9f86d081884c7d659...</span>
+                    </div>
+                    <div class="blockchain-row">
+                        <span class="blockchain-label">Transaction Reference</span>
+                        <span class="blockchain-value" id="txValue">0x9fa1b3d...</span>
+                    </div>
+                    <div class="blockchain-row">
+                        <span class="blockchain-label">Registration Timestamp</span>
+                        <span class="blockchain-value" id="regTimestamp">2026-02-14 10:32 UTC</span>
+                    </div>
+                    <div class="blockchain-row">
+                        <span class="blockchain-label">Verification Time</span>
+                        <span class="blockchain-value">&lt;1 second</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Rights Holder & Contributor Data -->
+            <div class="section">
+                <div class="section-title">
+                    <i class="fas fa-users"></i>
+                    Rights Holder & Contributor Data
+                </div>
+                <div class="rights-grid">
+                    <div class="rights-item">
+                        <div class="rights-number" id="rightsHolderCount">1</div>
+                        <div class="rights-label">Rights Holder</div>
+                    </div>
+                    <div class="rights-item">
+                        <div class="rights-number" id="contributorCount">3</div>
+                        <div class="rights-label">Contributors Registered</div>
+                    </div>
+                    <div class="rights-item">
+                        <div class="rights-number">GDPR</div>
+                        <div class="rights-label">Privacy Compliant</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Audit Trail -->
+            <div class="section">
+                <div class="section-title">
+                    <i class="fas fa-history"></i>
+                    Audit Trail
+                </div>
+                <div class="audit-trail">
+                    <div class="audit-row">
+                        <span>Record Created</span>
+                        <span id="recordCreated">Feb 14, 2026</span>
+                    </div>
+                    <div class="audit-row">
+                        <span>Last Verified</span>
+                        <span id="lastVerified">Feb 14, 2026</span>
+                    </div>
+                    <div class="audit-row">
+                        <span>Verification Method</span>
+                        <span>Cryptographic Hash Matching</span>
+                    </div>
+                    <div class="audit-row">
+                        <span>Audit Log Available</span>
+                        <span><i class="fas fa-check-circle" style="color: #2B6F4B;"></i> Yes</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Legal Verification Statement -->
+            <div class="legal-statement">
+                <h3>📌 Legal Verification Statement</h3>
+                <p>This report certifies that the submitted document was verified using cryptographic hashing and matched against an immutable blockchain record.</p>
+                <p>The verification confirms document integrity and timestamp authenticity at the time of registration. The blockchain stores only a cryptographic fingerprint of the document and does not contain personal or contractual data.</p>
+                <p>This verification provides technical evidence of document existence and integrity and may be used for audit, rights management, and dispute resolution processes.</p>
+                <small>Audit Disclaimer: Roya provides technical verification of document integrity. Legal interpretation of rights ownership remains subject to contractual agreements between parties.</small>
+            </div>
+
+            <!-- Data Protection Statement -->
+            <div class="data-protection">
+                <i class="fas fa-shield-alt"></i>
+                <span>All personal and contractual data are stored off-chain in secure infrastructure compliant with applicable data protection regulations.</span>
+            </div>
+
+            <!-- Verification Flow Diagram -->
+            <div class="flow-diagram">
+                <span class="flow-item">Upload</span>
+                <i class="fas fa-arrow-right flow-arrow"></i>
+                <span class="flow-item">Hash</span>
+                <i class="fas fa-arrow-right flow-arrow"></i>
+                <span class="flow-item">Blockchain Registration</span>
+                <i class="fas fa-arrow-right flow-arrow"></i>
+                <span class="flow-item">Verification Match</span>
+                <i class="fas fa-arrow-right flow-arrow"></i>
+                <span class="flow-item confirmed">Confirmed</span>
+            </div>
+
+            <!-- Contributor Split Table -->
+            <div class="section">
+                <div class="section-title">
+                    <i class="fas fa-chart-pie"></i>
+                    Rights Split Details
+                </div>
+                <table class="contributor-table">
+                    <thead>
+                        <tr>
+                            <th>Contributor</th>
+                            <th>Role</th>
+                            <th class="text-right">Share</th>
+                            <th class="text-right">Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody id="contributorTableBody">
+                        <!-- Filled by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- System Authentication -->
+            <div class="auth-footer">
+                <span><i class="fas fa-lock"></i> Access Level: Authorized Rights Organization Session</span>
+                <span><i class="fas fa-check-circle"></i> Session Verification: Secure Authenticated Access</span>
+            </div>
+
+            <!-- SMPT Certified Seal -->
+            <div class="digital-seal">
+                <img src="/images/smpt-shield.png" alt="SMPT Certified Verification & Audit" class="smpt-seal">
+                <div>
+                    <div class="seal-text">SMPT Certified ✓</div>
+                    <div class="seal-sub">Secured Music Protocol Technology — Verified & Audited</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Sample data (will be replaced by data from workflow)
+        const SAMPLE_DATA = [
+            { name: "Drik Svensson", role: "Composer", percentage: 50, ipi: "00624789341" },
+            { name: "Anna Deng", role: "Lyricist", percentage: 30, ipi: "00472915682" },
+            { name: "Lars Johansson", role: "Producer", percentage: 20, ipi: "00836125497" }
+        ];
+
+        const TOTAL_AMOUNT = 50000; // Example total
+
+        document.addEventListener('DOMContentLoaded', function() {
+            loadReportData();
+            setCurrentDate();
+        });
+
+        function setCurrentDate() {
+            const now = new Date();
+            const options = { year: 'numeric', month: 'short', day: 'numeric' };
+            const dateStr = now.toLocaleDateString('en-US', options);
+            document.getElementById('generatedDate').textContent = dateStr;
+            document.getElementById('uploadDate').textContent = dateStr;
+            document.getElementById('recordCreated').textContent = dateStr;
+            document.getElementById('lastVerified').textContent = dateStr;
+            document.getElementById('regTimestamp').textContent = now.toISOString().replace('T', ' ').substring(0, 16) + ' UTC';
+        }
+
+        function loadReportData() {
+            try {
+                // Try to load from localStorage (passed from workflow)
+                const reportData = localStorage.getItem('royaReportData');
+                const fileName = localStorage.getItem('royaFileName');
+                const documentHash = localStorage.getItem('royaDocumentHash');
+                const timestamp = localStorage.getItem('royaReportTimestamp');
+                
+                let data = SAMPLE_DATA;
+                if (reportData) {
+                    data = JSON.parse(reportData);
+                }
+                
+                // Update UI with data
+                updateReportWithData(data, fileName, documentHash, timestamp);
+                
+            } catch (error) {
+                console.error('Error loading report data:', error);
+                updateReportWithData(SAMPLE_DATA);
+            }
+        }
+
+        function updateReportWithData(data, fileName, documentHash, timestamp) {
+            // Update file info
+            if (fileName) {
+                document.getElementById('fileName').textContent = fileName;
+            }
+            
+            // Update verification ID
+            const date = new Date();
+            const id = `RY-${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${Math.floor(Math.random()*1000)}`;
+            document.getElementById('verificationId').textContent = id;
+            
+            // Update counts
+            document.getElementById('contributorCount').textContent = data.length;
+            
+            // Update blockchain data (using hash from workflow if available)
+            if (documentHash) {
+                document.getElementById('cidValue').textContent = documentHash.substring(0, 20) + '...';
+                document.getElementById('hashValue').textContent = documentHash.substring(0, 15) + '...';
+                document.getElementById('txValue').textContent = '0x' + documentHash.substring(0, 8) + '...';
+            }
+            
+            // Update contributor table
+            updateContributorTable(data);
+        }
+
+        function updateContributorTable(data) {
+            const tbody = document.getElementById('contributorTableBody');
+            let html = '';
+            
+            data.forEach(item => {
+                const amount = (TOTAL_AMOUNT * (item.percentage || 0) / 100).toFixed(2);
+                html += `
+                    <tr>
+                        <td><strong>${item.name}</strong></td>
+                        <td><span class="role-badge">${item.role}</span></td>
+                        <td class="text-right">${item.percentage || 0}%</td>
+                        <td class="text-right">${Number(amount).toLocaleString('sv-SE')} kr</td>
+                    </tr>
+                `;
+            });
+            
+            tbody.innerHTML = html;
+        }
+
+        function toggleBlockchain() {
+            const content = document.getElementById('blockchainContent');
+            const icon = document.getElementById('toggleIcon');
+            
+            content.classList.toggle('expanded');
+            if (content.classList.contains('expanded')) {
+                icon.className = 'fas fa-chevron-up';
+            } else {
+                icon.className = 'fas fa-chevron-down';
+            }
+        }
+
+        async function downloadAsPDF() {
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            loadingOverlay.classList.add('active');
+            
+            try {
+                const { jsPDF } = window.jspdf;
+                const reportContent = document.getElementById('reportContent');
+                
+                const canvas = await html2canvas(reportContent, {
+                    scale: 2,
+                    backgroundColor: '#ffffff',
+                    logging: false
+                });
+                
+                const imgData = canvas.toDataURL('image/png');
+                const pdf = new jsPDF({
+                    orientation: 'portrait',
+                    unit: 'px',
+                    format: [canvas.width * 0.75, canvas.height * 0.75]
+                });
+                
+                pdf.addImage(imgData, 'PNG', 0, 0, canvas.width * 0.75, canvas.height * 0.75);
+                
+                const date = new Date();
+                const fileName = `Roya_Verification_Report_${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}.pdf`;
+                pdf.save(fileName);
+                
+                showToast('PDF downloaded successfully');
+            } catch (error) {
+                console.error('PDF generation error:', error);
+                alert('Error generating PDF. Please try again.');
+            } finally {
+                loadingOverlay.classList.remove('active');
+            }
+        }
+
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                position: fixed;
+                bottom: 30px;
+                right: 30px;
+                background: #2B6F4B;
+                color: white;
+                padding: 16px 24px;
+                border-radius: 8px;
+                font-weight: 500;
+                z-index: 10000;
+                animation: slideIn 0.3s ease;
+                box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+            `;
+            toast.innerHTML = `<i class="fas fa-check-circle"></i> ${message}`;
+            
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        }
+
+        // Add animation styles
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideIn {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>

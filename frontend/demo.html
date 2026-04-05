@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Split Verification</title>
+    <meta http-equiv="refresh" content="0; url=/split-verification.html">
+    <link rel="stylesheet" href="/css/style.css">
+<style>
+  html,body{background:#0a0a0a!important;color:#e0e0e0!important;}
+  body>*:not(nav){color:#e0e0e0;}
+  h1,h2,h3,h4,h5,h6{color:#f1f5f9!important;}
+  p,li,td,th,span,div{color:inherit;}
+  a{color:#22d3ee;}
+  a:hover{color:#67e8f9;}
+  /* cards/panels */
+  .card,.panel,.box,[class*="card"],[class*="panel"],[class*="box"]{background:#111!important;border-color:#1e293b!important;}
+  /* inputs */
+  input,textarea,select{background:#111!important;color:#e0e0e0!important;border-color:#334155!important;}
+  /* tables */
+  table{background:#111!important;}
+  tr:nth-child(even){background:#0f172a!important;}
+  th{background:#1e293b!important;color:#94a3b8!important;}
+  /* override white/light backgrounds */
+  [style*="background:#f"],[style*="background: #f"],[style*="background:#F"],[style*="background: #F"],
+  [style*="background:white"],[style*="background: white"],[style*="background:#fff"],[style*="background: #fff"],
+  [style*="background:#FFF"]{background:#111!important;}
+  [style*="color:#1"],[style*="color: #1"],[style*="color:#2"],[style*="color: #2"],[style*="color:#3"],[style*="color: #3"],
+  [style*="color:#4"],[style*="color: #4"],[style*="color:black"],[style*="color: black"]{color:#e0e0e0!important;}
+</style>
+</head>
+<body>
+<nav style="background:#000;border-bottom:2px solid #22d3ee;padding:14px 32px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:9999;font-family:Inter,system-ui,sans-serif;">
+  <a href="/" style="text-decoration:none;"><span style="font-size:22px;font-weight:800;color:#22d3ee;letter-spacing:-0.04em;">ROYA</span></a>
+  <div style="display:flex;align-items:center;gap:20px;font-size:13px;">
+    <a href="/see.html" style="color:#9ca3af;text-decoration:none;white-space:nowrap;">How it Works</a>
+    <a href="/split-verification.html" style="color:#9ca3af;text-decoration:none;white-space:nowrap;">Split Verification</a>
+    <a href="/pages/review.html" style="color:#9ca3af;text-decoration:none;white-space:nowrap;">Metadata Review</a>
+    <div style="display:flex;gap:8px;margin-left:8px;">
+      <a href="/demo.html" style="background:rgba(251,191,36,0.15);color:#fbbf24;border:1px solid rgba(251,191,36,0.4);padding:7px 14px;border-radius:999px;font-weight:700;font-size:12px;text-decoration:none;white-space:nowrap;">🎬 Demo</a>
+      <a href="/live-example.html" style="background:rgba(34,211,238,0.1);color:#22d3ee;border:1px solid rgba(34,211,238,0.4);padding:7px 14px;border-radius:999px;font-weight:700;font-size:12px;text-decoration:none;white-space:nowrap;">🟢 Live</a>
+    </div>
+    <a href="/#pilot" style="background:#22d3ee;color:#000;padding:8px 16px;border-radius:999px;font-weight:700;font-size:12px;text-decoration:none;white-space:nowrap;">Book STIM Pilot</a>
+  </div>
+</nav>
+    <div class="container">
+        <div class="page-container">
+            <h1>Page Moved</h1>
+            <p>Split Verification is now available at <a class="back-link" href="/split-verification.html">/split-verification.html</a>.</p>
+        </div>
+    </div>
+<!-- ⚡ Live Mode Access Widget -->
+<div id="_liveWidget" style="position:fixed;bottom:20px;right:20px;z-index:99999;font-family:system-ui,sans-serif;">
+  <div id="_livePanel" style="display:none;position:absolute;bottom:52px;right:0;background:#fff;border:1px solid #E2E8F0;border-radius:12px;padding:16px;box-shadow:0 8px 28px rgba(0,0,0,0.15);width:210px;">
+    <div style="font-size:13px;font-weight:600;color:#1A202C;margin-bottom:10px;">Developer Access</div>
+    <input type="password" id="_liveInput" placeholder="Access code" autocomplete="off"
+      style="width:100%;padding:8px 12px;border:1px solid #CBD5E0;border-radius:8px;font-size:13px;margin-bottom:8px;box-sizing:border-box;"
+      onkeydown="if(event.key=="Enter")_checkLive()">
+    <button onclick="_checkLive()" style="width:100%;background:#1A202C;color:#fff;border:none;padding:8px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;">Unlock</button>
+    <div id="_liveErr" style="color:#C53030;font-size:12px;margin-top:6px;display:none;">Incorrect code</div>
+  </div>
+  <button id="_liveBtn" onclick="_toggleLive()" title="Developer access"
+    style="width:40px;height:40px;border-radius:50%;border:2px solid #E2E8F0;cursor:pointer;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,0.12);font-size:16px;transition:all 0.2s;">🔒</button>
+</div>
+<script>(function(){var K="royaLive",P="stockholm1";function on(){var b=document.getElementById("_liveBtn");b.style.background="#2B6F4B";b.style.border="2px solid #2B6F4B";b.style.color="#fff";b.textContent="⚡";b.title="Live Mode active — click to exit";}if(localStorage.getItem(K)===P)on();window._toggleLive=function(){if(localStorage.getItem(K)===P){if(confirm("Exit live mode?")){{localStorage.removeItem(K);location.reload();}}return;}var p=document.getElementById("_livePanel");p.style.display=p.style.display==="none"?"block":"none";if(p.style.display==="block")setTimeout(function(){document.getElementById("_liveInput").focus();},40);};window._checkLive=function(){if(document.getElementById("_liveInput").value===P){localStorage.setItem(K,P);document.getElementById("_livePanel").style.display="none";on();}else{var e=document.getElementById("_liveErr");e.style.display="block";document.getElementById("_liveInput").value="";setTimeout(function(){e.style.display="none";},2000);}};})();</script>
+</body>
+</html>
