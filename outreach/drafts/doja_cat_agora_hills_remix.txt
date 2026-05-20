@@ -1,0 +1,46 @@
+TO: scottc@ziffrenlaw.com
+CC: (optional: accounts@soundexchange.com — attach LOD when ready)
+SUBJECT: Unclaimed SoundExchange Royalties — Doja Cat / "Agora Hills (Remix)" [USRC12302416]
+
+---
+
+Scott,
+
+I'm reaching out regarding an unregistered sound recording royalty gap we identified for Doja Cat.
+
+TRACK:   Agora Hills (Remix) ft. Nicki Minaj
+ISRC:    USRC12302416
+STATUS:  Not found in SoundExchange ISRC registry (0 results — confirmed 03/2026)
+         Not listed on ASCAP Songview | Not listed on BMI 100% Works
+
+The original "Agora Hills" is fully registered and performing — but the Remix is sitting as an
+unmatched/suspense asset at SoundExchange. Based on ~48 million documented streams, the
+estimated accrued performer royalty balance is:
+
+    Conservative estimate:   $72,000
+    Optimized estimate:     $148,800
+
+This represents three years of digital performance royalties (non-interactive streams, satellite,
+cable) that are in SoundExchange's Black Box suspense pool and cannot be released without a
+valid Letter of Direction (LOD Part 1) + Schedule 1 repertoire filing.
+
+I've attached a Forensic Royalty Discrepancy Report (TR-7023BE7C0DCC) documenting the gap,
+statutory basis under 17 U.S.C. §114, and the calculation methodology. This report can serve
+as the Evidence of Discrepancy required for the LOD filing.
+
+Recovery timeline once filed: typically 30–90 days.
+
+I'm happy to walk you through the filing process or send additional documentation. Would a
+15-minute call this week work?
+
+Best,
+[Your Name]
+TrapRoyalties Forensic Unit
+traproyalties.com
+
+ATTACHMENT: Doja_Cat_Agora_Hills_Audit.pdf
+
+---
+CASE REF: TR-7023BE7C0DCC
+DATA VERIFIED: March 2026
+SoundExchange ISRC query: https://isrc.soundexchange.com/ (LOOK UP BY CODE → USRC12302416)

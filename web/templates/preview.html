@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Identity Attestation — TrapRoyalties</title>
+  <style>
+    :root { --bg:#0f172a; --card:#1e293b; --border:#334155; --text:#f8fafc; --dim:#94a3b8; --green:#00c851; --gold:#f59e0b; --red:#ef4444; }
+    * { box-sizing:border-box; margin:0; padding:0; }
+    body { background:var(--bg); color:var(--text); font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; min-height:100vh; display:flex; flex-direction:column; }
+    header { padding:13px 24px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
+    .logo { font-size:12px; font-weight:800; letter-spacing:0.18em; }
+    .logo span { color:var(--dim); font-weight:400; }
+    .badge { font-size:10px; color:var(--green); border:1px solid rgba(0,200,81,0.4); padding:4px 10px; border-radius:4px; letter-spacing:0.08em; }
+    main { flex:1; display:flex; justify-content:center; align-items:flex-start; padding:28px 16px; }
+    .card { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:28px 24px; width:100%; max-width:420px; }
+
+    h1 { font-size:20px; font-weight:800; text-align:center; margin-bottom:4px; }
+    .sub { font-size:13px; color:var(--dim); text-align:center; margin-bottom:6px; }
+    .case-ref { font-size:10px; font-family:monospace; color:var(--gold); text-align:center; margin-bottom:20px; letter-spacing:0.1em; }
+
+    /* Camera */
+    .cam-wrap { position:relative; width:100%; aspect-ratio:1; border-radius:12px; overflow:hidden; background:#000; margin-bottom:16px; display:none; }
+    .cam-wrap.show { display:block; }
+    #cam-video { width:100%; height:100%; object-fit:cover; transform:scaleX(-1); }
+    .scan-overlay { position:absolute; inset:0; pointer-events:none; }
+    .face-oval { position:absolute; top:10%; left:50%; transform:translateX(-50%); width:60%; aspect-ratio:0.78; border:2px solid rgba(245,158,11,0.85); border-radius:50%; animation:ovalPulse 1.1s ease-in-out infinite; }
+    .face-oval.ok { border-color:var(--green); animation:none; box-shadow:0 0 18px rgba(0,200,81,0.5); }
+    @keyframes ovalPulse { 0%,100%{box-shadow:0 0 0 0 rgba(245,158,11,0.5)} 50%{box-shadow:0 0 0 12px rgba(245,158,11,0)} }
+    .scan-line { position:absolute; left:20%; width:60%; height:2px; background:linear-gradient(90deg,transparent,rgba(245,158,11,0.85),transparent); animation:scanLine 1.8s ease-in-out infinite; }
+    .scan-line.hide { display:none; }
+    @keyframes scanLine { 0%{top:12%;opacity:0} 10%{opacity:1} 90%{opacity:1} 100%{top:84%;opacity:0} }
+    .corner { position:absolute; width:16px; height:16px; border-color:var(--gold); border-style:solid; }
+    .corner.ok { border-color:var(--green); }
+    .c-tl { top:7%;  left:14%;  border-width:2px 0 0 2px; }
+    .c-tr { top:7%;  right:14%; border-width:2px 2px 0 0; }
+    .c-bl { bottom:7%; left:14%;  border-width:0 0 2px 2px; }
+    .c-br { bottom:7%; right:14%; border-width:0 2px 2px 0; }
+    .cam-label { position:absolute; bottom:10px; left:0; right:0; text-align:center; font-size:11px; font-weight:700; letter-spacing:0.12em; color:var(--gold); text-shadow:0 1px 4px rgba(0,0,0,0.9); }
+    .cam-label.ok { color:var(--green); }
+
+    .btn-scan { width:100%; background:linear-gradient(135deg,#2563eb,#1d4ed8); color:#fff; border:none; border-radius:10px; padding:16px; font-size:15px; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:10px; transition:all 0.2s; margin-bottom:12px; }
+    .btn-scan:hover { background:linear-gradient(135deg,#1d4ed8,#1e40af); transform:translateY(-1px); }
+    .btn-scan:disabled { opacity:0.4; cursor:not-allowed; transform:none; }
+
+    /* Already scanned / success state */
+    .verified-box { background:rgba(0,200,81,0.07); border:1px solid rgba(0,200,81,0.3); border-radius:10px; padding:16px; margin-bottom:14px; display:none; }
+    .verified-box.show { display:block; }
+    .v-title { font-size:13px; font-weight:700; color:var(--green); margin-bottom:6px; }
+    .v-hash { font-size:10px; font-family:monospace; color:var(--dim); word-break:break-all; }
+
+    .status { text-align:center; font-size:13px; font-weight:500; min-height:18px; margin-bottom:10px; }
+    .status.scanning { color:var(--gold); }
+    .status.success  { color:var(--green); }
+    .status.error    { color:var(--red); }
+
+    .disclaimer { font-size:10px; color:var(--dim); text-align:center; line-height:1.6; padding-top:14px; border-top:1px solid var(--border); margin-top:6px; }
+
+    footer { text-align:center; padding:12px; font-size:10px; color:var(--dim); border-top:1px solid var(--border); }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">TRAPROYALTIES <span>FORENSIC UNIT</span></div>
+  <div class="badge">LOD IDENTITY ATTESTATION</div>
+</header>
+
+<main>
+  <div class="card">
+
+    <h1 id="title">
+      {% if already_scanned %}Identity Anchored &#10003;{% else %}Identity Attestation{% endif %}
+    </h1>
+    <p class="sub"><strong>{{ lead.artist }}</strong> &nbsp;&middot;&nbsp; {{ lead.track }}</p>
+    <p class="case-ref">CASE REF: {{ audit_id }}</p>
+
+    <!-- Camera viewer -->
+    <div class="cam-wrap" id="cam-wrap">
+      <video id="cam-video" autoplay playsinline muted></video>
+      <div class="scan-overlay">
+        <div class="face-oval" id="face-oval"></div>
+        <div class="scan-line" id="scan-line"></div>
+        <div class="corner c-tl" id="c-tl"></div>
+        <div class="corner c-tr" id="c-tr"></div>
+        <div class="corner c-bl" id="c-bl"></div>
+        <div class="corner c-br" id="c-br"></div>
+        <div class="cam-label" id="cam-label">ALIGN FACE IN OVAL</div>
+      </div>
+    </div>
+
+    <!-- Verified hash box -->
+    <div class="verified-box {% if already_scanned %}show{% endif %}" id="verified-box">
+      <div class="v-title">&#10003; Biometric Hash Generated</div>
+      <div class="v-hash" id="hash-display">
+        {% if scan_sha %}SHA256: 0x{{ scan_sha[:16].upper() }}...{{ scan_sha[-8:].upper() }}{% endif %}
+      </div>
+    </div>
+
+    <div class="status" id="status">
+      {% if already_scanned %}&#10003; Your identity has been anchored to this case.{% endif %}
+    </div>
+
+    {% if not already_scanned %}
+    <button class="btn-scan" id="scan-btn" onclick="startScan()">
+      <span>&#128247;</span>
+      <span id="btn-text">Start Biometric Scan</span>
+    </button>
+    {% else %}
+    <div style="text-align:center;font-size:13px;color:var(--dim);padding:8px 0;">
+      Your lawyer can now access the payment link to unlock the full report.
+    </div>
+    {% endif %}
+
+    <!-- Send to lawyer (shown after scan) -->
+    <div id="lawyer-share" style="display:none;margin-bottom:14px;">
+      <div style="font-size:10px;font-weight:700;color:var(--dim);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:8px;">&#128100; Send Payment Link to Your Lawyer</div>
+      <div style="display:flex;gap:8px;margin-bottom:8px;">
+        <input id="lawyer-url" type="text" readonly
+          value="https://traproyalties.com/lawyer/{{ audit_id }}"
+          style="flex:1;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:8px 10px;font-size:11px;font-family:monospace;color:var(--dim);">
+        <button onclick="copyLawyerLink()" id="copy-btn"
+          style="background:#1E3A8A;color:#fff;border:none;border-radius:6px;padding:8px 14px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;">
+          Copy
+        </button>
+      </div>
+      <button onclick="shareLawyerLink()"
+        style="width:100%;background:transparent;border:1px solid var(--border);color:var(--dim);border-radius:6px;padding:10px;font-size:12px;font-weight:600;cursor:pointer;">
+        &#8599; Share via WhatsApp / Email / Messages
+      </button>
+    </div>
+
+    {% if already_scanned %}
+    <div style="margin-bottom:14px;">
+      <div style="font-size:10px;font-weight:700;color:var(--dim);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:8px;">&#128100; Send Payment Link to Your Lawyer</div>
+      <div style="display:flex;gap:8px;margin-bottom:8px;">
+        <input type="text" readonly
+          value="https://traproyalties.com/lawyer/{{ audit_id }}"
+          style="flex:1;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:8px 10px;font-size:11px;font-family:monospace;color:var(--dim);">
+        <button onclick="copyLawyerLink()"
+          style="background:#1E3A8A;color:#fff;border:none;border-radius:6px;padding:8px 14px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;">
+          Copy
+        </button>
+      </div>
+      <button onclick="shareLawyerLink()"
+        style="width:100%;background:transparent;border:1px solid var(--border);color:var(--dim);border-radius:6px;padding:10px;font-size:12px;font-weight:600;cursor:pointer;">
+        &#8599; Share via WhatsApp / Email / Messages
+      </button>
+    </div>
+    {% endif %}
+
+    <p class="disclaimer">
+      By scanning, you are generating a digital signature hash for <strong>SoundExchange Form LOD-2026</strong>.<br>
+      No image or video data is stored. Only the biometric hash anchor is recorded.
+    </p>
+
+  </div>
+</main>
+
+<footer>Confidential &nbsp;&middot;&nbsp; TrapRoyaltiesPro &nbsp;&middot;&nbsp; TR Screening Protocol V1</footer>
+
+<script>
+const AUDIT_ID = "{{ audit_id }}";
+let stream = null;
+
+async function startScan() {
+  const btn = document.getElementById('scan-btn');
+  btn.disabled = true;
+  document.getElementById('btn-text').textContent = 'Opening camera...';
+
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 640 } },
+      audio: false
+    });
+    document.getElementById('cam-video').srcObject = stream;
+    document.getElementById('cam-wrap').classList.add('show');
+    document.getElementById('status').className = 'status scanning';
+    document.getElementById('status').textContent = 'Scanning... align your face in the oval';
+
+    setTimeout(() => { document.getElementById('cam-label').textContent = 'SCANNING BIOMETRIC DATA...'; }, 1800);
+    setTimeout(() => { document.getElementById('cam-label').textContent = 'GENERATING HASH ANCHOR...'; }, 3400);
+
+    setTimeout(async () => {
+      // Go green
+      document.getElementById('face-oval').classList.add('ok');
+      document.getElementById('scan-line').classList.add('hide');
+      ['c-tl','c-tr','c-bl','c-br'].forEach(id => document.getElementById(id).classList.add('ok'));
+      const lbl = document.getElementById('cam-label');
+      lbl.textContent = 'IDENTITY ANCHORED \u2713';
+      lbl.classList.add('ok');
+
+      // POST to server to record the scan
+      try {
+        const res = await fetch('/preview/scan-complete/' + AUDIT_ID, { method: 'POST' });
+        const data = await res.json();
+
+        setTimeout(() => {
+          if (stream) stream.getTracks().forEach(t => t.stop());
+          document.getElementById('cam-wrap').classList.remove('show');
+          document.getElementById('title').textContent = 'Identity Anchored \u2713';
+          document.getElementById('status').className = 'status success';
+          document.getElementById('status').textContent = '\u2713 Scan complete. Your lawyer can now pay to unlock the report.';
+
+          if (data.sha256) {
+            document.getElementById('hash-display').textContent =
+              'SHA256: 0x' + data.sha256.slice(0,16).toUpperCase() + '...' + data.sha256.slice(-8).toUpperCase();
+          }
+          document.getElementById('verified-box').classList.add('show');
+          document.getElementById('lawyer-share').classList.add('show');
+          btn.style.display = 'none';
+        }, 1400);
+
+      } catch(err) {
+        if (stream) stream.getTracks().forEach(t => t.stop());
+        document.getElementById('status').className = 'status error';
+        document.getElementById('status').textContent = 'Server error — try again.';
+        btn.disabled = false;
+      }
+    }, 4800);
+
+  } catch(e) {
+    btn.disabled = false;
+    document.getElementById('btn-text').textContent = 'Start Biometric Scan';
+    document.getElementById('status').className = 'status error';
+    document.getElementById('status').textContent = e.name === 'NotAllowedError'
+      ? 'Camera access denied — please allow camera in your browser settings.'
+      : 'Camera error: ' + e.message;
+  }
+}
+function copyLawyerLink() {
+  const url = "https://traproyalties.com/lawyer/{{ audit_id }}";
+  navigator.clipboard.writeText(url).then(() => {
+    const btn = document.getElementById('copy-btn');
+    if (btn) { btn.textContent = 'Copied!'; btn.style.background = '#059669'; }
+    setTimeout(() => { if (btn) { btn.textContent = 'Copy'; btn.style.background = '#1E3A8A'; } }, 2000);
+  }).catch(() => {
+    const el = document.createElement('textarea');
+    el.value = url; document.body.appendChild(el); el.select(); document.execCommand('copy'); document.body.removeChild(el);
+  });
+}
+
+function shareLawyerLink() {
+  const url  = "https://traproyalties.com/lawyer/{{ audit_id }}";
+  const text = "Please review and pay to unlock my forensic royalty audit report: ";
+  if (navigator.share) {
+    navigator.share({ title: 'Forensic Royalty Audit — Action Required', url, text }).catch(() => {});
+  } else {
+    window.open('https://wa.me/?text=' + encodeURIComponent(text + url), '_blank');
+  }
+}
+</script>
+
+</body>
+</html>

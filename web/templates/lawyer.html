@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TrapRoyaltiesPro — Forensic Royalty Audit | {{ lead.artist }}</title>
+  <style>
+    :root {
+      --navy:#141B25; --blue:#2C3E50; --green:#27AE60; --red:#b91c1c;
+      --border:#D1D5DB; --bg:#F9FAFB; --text:#1F2937; --muted:#6b7280;
+    }
+    * { box-sizing:border-box; margin:0; padding:0; }
+    body { font-family:system-ui,-apple-system,"Segoe UI",sans-serif; background:var(--bg); color:var(--text); }
+    .admin-header { background:var(--navy); color:#fff; padding:14px 40px; display:flex; justify-content:space-between; align-items:center; border-bottom:3px solid #34495E; }
+    .admin-header strong { font-size:13px; letter-spacing:0.12em; }
+    .secure-tag { font-family:monospace; font-size:11px; color:#94A3B8; }
+    .container { max-width:1020px; margin:36px auto; padding:0 20px; }
+    .case-header { background:#fff; border:1px solid var(--border); padding:24px 28px; margin-bottom:24px; border-radius:4px; }
+    .case-ref { font-size:18px; font-weight:700; color:var(--navy); margin-bottom:6px; }
+    .case-status { color:var(--red); font-weight:600; font-size:13px; margin-bottom:4px; }
+    .case-meta { font-size:13px; color:var(--muted); line-height:1.7; }
+    .case-meta strong { color:var(--text); }
+    .grid { display:grid; grid-template-columns:1fr 360px; gap:24px; }
+    .panel { background:#fff; border:1px solid var(--border); border-radius:4px; padding:28px; }
+    .section-title { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; color:var(--muted); margin-bottom:14px; }
+    .evidence-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:20px; }
+    .ev-cell { background:var(--bg); border:1px solid var(--border); border-radius:4px; padding:10px 12px; }
+    .ev-label { font-size:10px; text-transform:uppercase; letter-spacing:0.08em; color:var(--muted); margin-bottom:3px; }
+    .ev-value { font-size:13px; font-weight:500; }
+    .ev-value.red { color:var(--red); font-weight:700; }
+    .ev-value.mono { font-family:monospace; font-size:12px; }
+    .legal-box { background:#f0f4ff; border-left:4px solid #1E3A8A; padding:14px 16px; margin:16px 0; border-radius:0 4px 4px 0; font-size:13px; line-height:1.6; }
+    .doc-list { list-style:none; margin:12px 0 0; }
+    .doc-list li { display:flex; align-items:flex-start; gap:12px; padding:10px 0; border-bottom:1px solid var(--border); }
+    .doc-list li:last-child { border-bottom:none; }
+    .doc-num { background:#E5E7EB; color:var(--blue); font-weight:700; font-size:11px; min-width:28px; height:28px; border-radius:4px; display:flex; align-items:center; justify-content:center; }
+    .doc-info strong { font-size:13px; display:block; margin-bottom:2px; }
+    .doc-info span { font-size:12px; color:var(--muted); }
+    .divider { border-top:1px solid var(--border); margin:20px 0; }
+
+    /* Right panel */
+    .pay-panel { background:#fff; border:1px solid var(--border); border-radius:4px; padding:24px; height:fit-content; position:sticky; top:20px; }
+
+    /* Biometric status */
+    .bio-pending { background:#FFFBEB; border:1px solid #FEF3C7; border-radius:6px; padding:16px; margin-bottom:20px; }
+    .bio-pending-title { font-size:12px; font-weight:700; color:#92400E; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:8px; }
+    .bio-pending p { font-size:12px; color:#78350F; line-height:1.6; margin-bottom:10px; }
+    .artist-link-box { display:flex; gap:8px; }
+    .artist-link-input { flex:1; font-size:11px; font-family:monospace; background:#fff; border:1px solid #D1D5DB; border-radius:4px; padding:7px 10px; color:#374151; }
+    .btn-copy-link { background:#1E3A8A; color:#fff; border:none; border-radius:4px; padding:7px 14px; font-size:11px; font-weight:700; cursor:pointer; white-space:nowrap; }
+    .btn-copy-link.copied { background:#059669; }
+    .polling-indicator { display:flex; align-items:center; gap:6px; margin-top:10px; font-size:11px; color:#92400E; }
+    .poll-dot { width:6px; height:6px; background:#F59E0B; border-radius:50%; animation:pollBlink 1.2s infinite; }
+    @keyframes pollBlink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+
+    /* Verified bio box */
+    .bio-verified { background:#F0FDF4; border:1px solid #86EFAC; border-radius:6px; padding:16px; margin-bottom:20px; display:none; }
+    .bio-verified.show { display:block; }
+    .bio-verified-title { font-size:12px; font-weight:700; color:#166534; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:6px; }
+    .bio-verified-hash { font-size:10px; font-family:monospace; color:#15803D; }
+
+    /* Payment section */
+    .payment-section { display:none; }
+    .payment-section.show { display:block; }
+    .recovery-box { background:var(--bg); border:1px dashed var(--border); padding:18px; margin-bottom:20px; border-radius:4px; }
+    .rec-label { font-size:10px; text-transform:uppercase; letter-spacing:0.1em; color:var(--muted); font-weight:700; margin-bottom:6px; }
+    .rec-value { font-size:26px; font-weight:800; color:var(--navy); }
+    .rec-sub { font-size:11px; color:var(--muted); margin-top:4px; }
+    .rec-range { display:flex; gap:10px; margin-top:10px; }
+    .rec-range div { flex:1; background:#fff; border:1px solid var(--border); border-radius:4px; padding:8px 10px; }
+    .rec-range .rl { font-size:10px; color:var(--muted); text-transform:uppercase; }
+    .rec-range .rv { font-size:14px; font-weight:700; }
+    .fee-row { margin-bottom:18px; }
+    .fee-label { font-size:10px; text-transform:uppercase; letter-spacing:0.08em; color:var(--muted); font-weight:700; margin-bottom:4px; }
+    .fee-value { font-size:20px; font-weight:800; }
+    .btn-pay { display:block; width:100%; padding:16px; background:var(--navy); color:#fff; text-align:center; font-weight:700; font-size:14px; border:none; border-radius:4px; cursor:pointer; letter-spacing:0.04em; margin-bottom:10px; }
+    .btn-pay:hover { background:#0f1520; }
+    .btn-download { display:block; width:100%; padding:16px; background:#059669; color:#fff; text-align:center; font-weight:700; font-size:14px; border:none; border-radius:4px; cursor:pointer; letter-spacing:0.04em; margin-bottom:10px; text-decoration:none; }
+    .btn-download:hover { background:#047857; }
+    .pay-sub { font-size:11px; color:var(--muted); text-align:center; }
+    .guarantee { margin-top:18px; padding-top:16px; border-top:1px solid var(--border); font-size:11px; color:var(--muted); line-height:1.6; }
+    .guarantee strong { color:var(--text); }
+
+    footer { text-align:center; padding:20px; font-size:11px; color:var(--muted); border-top:1px solid var(--border); margin-top:40px; }
+
+    @media (max-width:768px) {
+      .grid { grid-template-columns:1fr; }
+      .evidence-grid { grid-template-columns:1fr; }
+      .admin-header { flex-direction:column; gap:6px; text-align:center; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="admin-header">
+  <strong>TRAPROYALTIES FORENSIC RECOVERY DIVISION</strong>
+  <div class="secure-tag">TLS 1.3 SECURE &nbsp;·&nbsp; NODE: STOCKHOLM-1 &nbsp;·&nbsp; PROTOCOL: TR-V1.2 &nbsp;·&nbsp; <a href="/help" target="_blank" style="color:#60a5fa;text-decoration:none;">Technical FAQ &amp; Compliance &#8599;</a></div>
+</div>
+
+<div class="container">
+
+  <div class="case-header">
+    <div class="case-ref">CASE REF: {{ audit_id }}</div>
+    <div class="case-status">REGISTRATION GAP DETECTED</div>
+    <div class="case-meta">
+      <strong>Subject Artist:</strong> {{ lead.artist }} &nbsp;·&nbsp;
+      <strong>Track:</strong> {{ lead.track }} &nbsp;·&nbsp;
+      <strong>Classification:</strong> {{ lead.priority }} &nbsp;·&nbsp;
+      <strong>Jurisdiction:</strong> United States — Digital Performance Royalty Domain
+    </div>
+  </div>
+
+  <div class="grid">
+
+    <!-- LEFT: Evidence -->
+    <div>
+      <div class="panel" style="margin-bottom:20px;">
+        <div class="section-title">Evidence Summary</div>
+        <div class="evidence-grid">
+          <div class="ev-cell">
+            <div class="ev-label">Verified ISRC</div>
+            <div class="ev-value mono">{{ redacted_isrc }} &#128274;</div>
+          </div>
+          <div class="ev-cell">
+            <div class="ev-label">Registry Status</div>
+            <div class="ev-value red">Unregistered / Non-Identified</div>
+          </div>
+          <div class="ev-cell">
+            <div class="ev-label">DSP Stream Volume</div>
+            <div class="ev-value">
+              {% if lead.streams %}{{ "{:,}".format(lead.streams | int) }}+{% else %}—{% endif %}
+            </div>
+          </div>
+          <div class="ev-cell">
+            <div class="ev-label">Accrual Window</div>
+            <div class="ev-value">Retroactive (36 Months)</div>
+          </div>
+          <div class="ev-cell">
+            <div class="ev-label">Failure Type</div>
+            <div class="ev-value">ISRC-to-Performer Mapping Breakdown</div>
+          </div>
+          <div class="ev-cell">
+            <div class="ev-label">Risk Level</div>
+            <div class="ev-value red">High — Black Box Accrual Likely</div>
+          </div>
+        </div>
+        <div class="legal-box">
+          Data indicates this asset is currently held in <strong>Suspense / Black Box accounts</strong>
+          due to a metadata failure at the registry level. This condition is actionable under
+          SoundExchange's <strong>Featured Artist Letter of Direction (LOD)</strong> framework
+          (17 U.S.C. S.114 &amp; S.112).
+          <br><br>
+          <strong>Recommended Action:</strong> Submit a Certified LOD Repertoire Chart + Forensic Audit
+          Packet to SoundExchange to initiate correction and retroactive royalty release.
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="section-title">Certified Extraction — Contents</div>
+        <ul class="doc-list">
+          <li>
+            <div class="doc-num">01</div>
+            <div class="doc-info">
+              <strong>4-Page Forensic Audit Exhibit</strong>
+              <span>Black Box accrual analysis, stream validation, registry gap documentation, statutory citations</span>
+            </div>
+          </li>
+          <li>
+            <div class="doc-num">02</div>
+            <div class="doc-info">
+              <strong>Certified LOD Repertoire Chart (Schedule 1)</strong>
+              <span>Auto-populated metadata formatted to SoundExchange Part 2 specifications</span>
+            </div>
+          </li>
+          <li>
+            <div class="doc-num">03</div>
+            <div class="doc-info">
+              <strong>Artist Biometric Attestation Certificate</strong>
+              <span>SHA-256 identity anchor — biometrically signed by the artist</span>
+            </div>
+          </li>
+          <li>
+            <div class="doc-num">04</div>
+            <div class="doc-info">
+              <strong>Chain-of-Custody Hash Verification</strong>
+              <span>SHA-256 anchor providing immutable proof of data integrity</span>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- RIGHT: Action panel -->
+    <div class="pay-panel">
+
+      <!-- STEP 1: Awaiting artist scan -->
+      <div id="bio-pending" class="bio-pending" {% if scan %}style="display:none"{% endif %}>
+        <div class="bio-pending-title">Step 1 — Identity Verification</div>
+        <p>Send this link to <strong>{{ lead.artist }}</strong> to complete a biometric scan on their phone. The payment button unlocks automatically once they scan.</p>
+        <div class="artist-link-box">
+          <input class="artist-link-input" id="artist-link-input"
+            type="text" readonly
+            value="https://traproyalties.com/preview/{{ audit_id }}">
+          <button class="btn-copy-link" id="copy-btn" onclick="copyArtistLink()">Copy</button>
+        </div>
+        <div class="polling-indicator">
+          <div class="poll-dot"></div>
+          <span>Waiting for artist scan...</span>
+        </div>
+      </div>
+
+      <!-- Verified badge (shown after scan) -->
+      <div id="bio-verified" class="bio-verified {% if scan %}show{% endif %}">
+        <div class="bio-verified-title">&#10003; Artist Identity Anchored</div>
+        <div class="bio-verified-hash" id="verified-hash">
+          {% if scan %}SHA256: 0x{{ scan.sha256[:16].upper() }}...{{ scan.sha256[-8:].upper() }}{% endif %}
+        </div>
+        {% if scan and scan.monad_tx %}
+        <div style="margin-top:8px;font-size:10px;color:#a78bfa;font-family:monospace;word-break:break-all;">
+          &#9713; MONAD: <a href="https://testnet.monadexplorer.com/tx/0x{{ scan.monad_tx }}" target="_blank" style="color:#a78bfa;">0x{{ scan.monad_tx[:16] }}...{{ scan.monad_tx[-8:] }}</a>
+          &nbsp;&middot;&nbsp; Block {{ scan.monad_block }}
+        </div>
+        {% endif %}
+      </div>
+
+      <!-- Payment section (hidden until scan done) -->
+      <div id="payment-section" class="payment-section {% if scan %}show{% endif %}">
+        <div class="recovery-box">
+          <div class="rec-label">Estimated Recovery Potential</div>
+          <div class="rec-value">{{ lead.bounty_high }}</div>
+          <div class="rec-sub">(Subject to registry acceptance and DSP reconciliation)</div>
+          <div class="rec-range">
+            <div>
+              <div class="rl">Conservative</div>
+              <div class="rv">{{ lead.bounty_low }}</div>
+            </div>
+            <div>
+              <div class="rl">Optimized</div>
+              <div class="rv">{{ lead.bounty_high }}</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="fee-row">
+          <div class="fee-label">Extraction &amp; Certification Fee</div>
+          <div class="fee-value">$150.00</div>
+        </div>
+
+        {% if paid %}
+        <a href="/download-redirect/{{ audit_id }}" class="btn-download">
+          &#8595; &nbsp; Download Certified Report
+        </a>
+        <div class="pay-sub">Identity verified &nbsp;·&nbsp; Payment confirmed &nbsp;·&nbsp; Immediate delivery</div>
+        {% else %}
+        <form action="/pay/{{ audit_id }}" method="POST">
+          <button type="submit" class="btn-pay">
+            UNLOCK CERTIFIED REPORT — $150
+          </button>
+        </form>
+        <div class="pay-sub">One-time &nbsp;·&nbsp; No subscription &nbsp;·&nbsp; Instant digital delivery</div>
+        {% endif %}
+
+        <div class="guarantee">
+          <strong>ADJUDICATION GUARANTEE:</strong> If SoundExchange rejects the identified ISRC mapping
+          as "Previously Registered," a full automated refund is processed within 14 days.
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<footer>
+  <strong>TrapRoyaltiesPro — Rights &amp; Royalty Intelligence</strong><br>
+  Forensic Audit Division &nbsp;·&nbsp; Compliance &amp; Metadata Correction
+</footer>
+
+<script>
+const AUDIT_ID = "{{ audit_id }}";
+const ALREADY_SCANNED = {{ 'true' if scan else 'false' }};
+let pollTimer = null;
+
+function copyArtistLink() {
+  const input = document.getElementById('artist-link-input');
+  navigator.clipboard.writeText(input.value).then(() => {
+    const btn = document.getElementById('copy-btn');
+    btn.textContent = 'Copied!';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+  }).catch(() => {
+    input.select();
+    document.execCommand('copy');
+    document.getElementById('copy-btn').textContent = 'Copied!';
+  });
+}
+
+function showVerified(sha256) {
+  document.getElementById('bio-pending').style.display = 'none';
+  document.getElementById('bio-verified').classList.add('show');
+  if (sha256) {
+    document.getElementById('verified-hash').textContent =
+      'SHA256: 0x' + sha256.slice(0,16).toUpperCase() + '...' + sha256.slice(-8).toUpperCase();
+  }
+  document.getElementById('payment-section').classList.add('show');
+}
+
+async function pollScanStatus() {
+  try {
+    const res  = await fetch('/api/scan-status/' + AUDIT_ID);
+    const data = await res.json();
+    if (data.scanned) {
+      clearInterval(pollTimer);
+      showVerified(data.sha256);
+    }
+  } catch(e) { /* ignore */ }
+}
+
+// Start polling if scan not yet done
+if (!ALREADY_SCANNED) {
+  pollTimer = setInterval(pollScanStatus, 3000);
+}
+</script>
+
+</body>
+</html>

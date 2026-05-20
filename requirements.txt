@@ -1,0 +1,23 @@
+# Scraping
+requests
+beautifulsoup4
+lxml
+playwright
+playwright-stealth
+
+# Data
+pandas
+python-dotenv
+
+# Outreach / PDF / Charts
+matplotlib
+fpdf2
+qrcode[pil]
+pillow
+
+# Web / Checkout / Biometric
+flask
+stripe
+webauthn
+
+# No Spotify. No YouTube API. No paid keys required.

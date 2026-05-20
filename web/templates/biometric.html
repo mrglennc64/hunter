@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Identity Verification — TrapRoyalties</title>
+  <style>
+    :root {
+      --bg: #0f172a; --card: #1e293b; --border: #334155;
+      --text: #f8fafc; --dim: #94a3b8; --green: #00c851;
+      --green-dk: #15803d; --red: #ef4444; --blue: #3b82f6; --gold: #f59e0b;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; min-height: 100vh; display: flex; flex-direction: column; }
+    header { padding: 13px 28px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+    .logo { font-size: 12px; font-weight: 800; letter-spacing: 0.18em; }
+    .logo span { color: var(--dim); font-weight: 400; }
+    .proto-badge { font-size: 10px; letter-spacing: 0.1em; color: var(--green); border: 1px solid rgba(0,200,81,0.4); padding: 4px 10px; border-radius: 4px; }
+    main { flex: 1; display: flex; justify-content: center; padding: 24px 16px; }
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 28px 28px 24px; width: 100%; max-width: 460px; }
+
+    .pay-strip { background: rgba(0,200,81,0.07); border: 1px solid rgba(0,200,81,0.25); border-radius: 8px; padding: 9px 14px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+    .pay-dot { width: 7px; height: 7px; background: var(--green); border-radius: 50%; flex-shrink: 0; box-shadow: 0 0 8px var(--green); animation: blink 2s infinite; }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+    .pay-text { font-size: 12px; color: var(--green); }
+    .pay-text strong { font-weight: 700; }
+
+    h1 { font-size: 20px; font-weight: 800; text-align: center; margin-bottom: 4px; }
+    .artist-line { font-size: 13px; color: var(--dim); text-align: center; margin-bottom: 18px; }
+    .artist-line strong { color: var(--text); }
+
+    /* ── Camera viewer ── */
+    .cam-wrap {
+      position: relative; width: 100%; aspect-ratio: 1;
+      border-radius: 12px; overflow: hidden; background: #000;
+      margin-bottom: 16px; display: none;
+    }
+    .cam-wrap.show { display: block; }
+    #cam-video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
+
+    /* Scanning overlay */
+    .scan-overlay {
+      position: absolute; inset: 0; pointer-events: none;
+    }
+    /* Oval face guide */
+    .face-oval {
+      position: absolute; top: 12%; left: 50%; transform: translateX(-50%);
+      width: 62%; aspect-ratio: 0.78;
+      border: 2px solid rgba(245,158,11,0.8);
+      border-radius: 50%;
+      box-shadow: 0 0 0 0 rgba(245,158,11,0.5);
+      animation: ovalPulse 1.2s ease-in-out infinite;
+    }
+    .face-oval.verified { border-color: var(--green); box-shadow: 0 0 18px rgba(0,200,81,0.5); animation: none; }
+    @keyframes ovalPulse { 0%,100%{box-shadow:0 0 0 0 rgba(245,158,11,0.5)} 50%{box-shadow:0 0 0 10px rgba(245,158,11,0)} }
+
+    /* Scan line */
+    .scan-line {
+      position: absolute; left: 19%; width: 62%; height: 2px;
+      background: linear-gradient(90deg, transparent, rgba(245,158,11,0.8), transparent);
+      animation: scanLine 1.8s ease-in-out infinite;
+    }
+    .scan-line.hide { display: none; }
+    @keyframes scanLine {
+      0%   { top: 14%; opacity: 0; }
+      10%  { opacity: 1; }
+      90%  { opacity: 1; }
+      100% { top: 82%; opacity: 0; }
+    }
+
+    /* Corner brackets */
+    .corner { position: absolute; width: 18px; height: 18px; border-color: var(--gold); border-style: solid; }
+    .corner.tl { top: 8%;  left: 15%;  border-width: 2px 0 0 2px; }
+    .corner.tr { top: 8%;  right: 15%; border-width: 2px 2px 0 0; }
+    .corner.bl { bottom: 8%; left: 15%;  border-width: 0 0 2px 2px; }
+    .corner.br { bottom: 8%; right: 15%; border-width: 0 2px 2px 0; }
+    .corner.verified { border-color: var(--green); }
+
+    /* Scan status text on camera */
+    .cam-status {
+      position: absolute; bottom: 10px; left: 0; right: 0;
+      text-align: center; font-size: 11px; font-weight: 700;
+      letter-spacing: 0.12em; color: var(--gold);
+      text-shadow: 0 1px 4px rgba(0,0,0,0.8);
+    }
+    .cam-status.ok { color: var(--green); }
+
+    /* Proto grid */
+    .proto-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 18px; }
+    .proto-cell { background: var(--bg); border: 1px solid var(--border); border-radius: 7px; padding: 9px 11px; }
+    .proto-label { font-size: 9px; color: var(--dim); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 3px; }
+    .proto-value { font-size: 11px; font-weight: 600; font-family: monospace; }
+    .proto-value.gold  { color: var(--gold); }
+    .proto-value.red   { color: var(--red); }
+    .proto-value.green { color: var(--green); }
+
+    .instruction { font-size: 13px; color: var(--dim); line-height: 1.6; text-align: center; margin-bottom: 18px; }
+
+    .btn-scan { width: 100%; background: linear-gradient(135deg, #2563eb, #1d4ed8); color: #fff; border: none; border-radius: 10px; padding: 16px; font-size: 15px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: all 0.2s; }
+    .btn-scan:hover { background: linear-gradient(135deg, #1d4ed8, #1e40af); transform: translateY(-1px); }
+    .btn-scan:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+    /* Post-scan */
+    .actions { display: none; flex-direction: column; gap: 12px; }
+    .actions.show { display: flex; }
+
+    .btn-download { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; padding: 16px; background: linear-gradient(135deg, #059669, #047857); color: #fff; border: none; border-radius: 10px; font-size: 15px; font-weight: 700; text-decoration: none; transition: opacity 0.2s; }
+    .btn-download:hover { opacity: 0.9; }
+
+    .lawyer-box { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 14px; }
+    .lawyer-title { font-size: 10px; color: var(--dim); letter-spacing: 0.1em; text-transform: uppercase; font-weight: 700; margin-bottom: 8px; }
+    .link-row { display: flex; gap: 8px; align-items: center; }
+    .link-text { flex: 1; background: var(--card); border: 1px solid var(--border); border-radius: 6px; padding: 8px 10px; font-size: 10px; font-family: monospace; color: var(--dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .btn-copy { background: var(--blue); color: #fff; border: none; border-radius: 6px; padding: 8px 14px; font-size: 12px; font-weight: 700; cursor: pointer; white-space: nowrap; transition: background 0.2s; }
+    .btn-copy.copied { background: #059669; }
+    .btn-share { width: 100%; margin-top: 8px; background: transparent; border: 1px solid var(--border); color: var(--dim); border-radius: 6px; padding: 9px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.15s; }
+    .btn-share:hover { background: var(--card); color: var(--text); }
+
+    .status { text-align: center; font-size: 13px; font-weight: 500; min-height: 20px; margin-top: 10px; }
+    .status.scanning { color: var(--gold); }
+    .status.success  { color: var(--green); }
+    .status.error    { color: var(--red); }
+
+    footer { text-align: center; padding: 12px; font-size: 10px; color: var(--dim); border-top: 1px solid var(--border); }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">TRAPROYALTIES <span>FORENSIC UNIT</span></div>
+  <div class="proto-badge">TR SCREENING PROTOCOL V1</div>
+</header>
+
+<main>
+  <div class="card">
+
+    <div class="pay-strip">
+      <div class="pay-dot"></div>
+      <div class="pay-text"><strong>PAYMENT VERIFIED</strong> &nbsp;&middot;&nbsp; Report ready for identity lock</div>
+    </div>
+
+    <h1 id="title">Face Scan Required</h1>
+    <p class="artist-line">
+      <strong>{{ lead.artist }}</strong> &nbsp;&middot;&nbsp; {{ lead.track }}
+    </p>
+
+    <!-- Live camera feed with scan overlay -->
+    <div class="cam-wrap" id="cam-wrap">
+      <video id="cam-video" autoplay playsinline muted></video>
+      <div class="scan-overlay">
+        <div class="face-oval" id="face-oval"></div>
+        <div class="scan-line" id="scan-line"></div>
+        <div class="corner tl" id="c-tl"></div>
+        <div class="corner tr" id="c-tr"></div>
+        <div class="corner bl" id="c-bl"></div>
+        <div class="corner br" id="c-br"></div>
+        <div class="cam-status" id="cam-status">ALIGN FACE IN OVAL</div>
+      </div>
+    </div>
+
+    <div class="proto-grid">
+      <div class="proto-cell">
+        <div class="proto-label">Audit ID</div>
+        <div class="proto-value">{{ audit_id }}</div>
+      </div>
+      <div class="proto-cell">
+        <div class="proto-label">Registry Status</div>
+        <div class="proto-value red">POTENTIAL UNCLAIMED</div>
+      </div>
+      <div class="proto-cell">
+        <div class="proto-label">Protocol</div>
+        <div class="proto-value">TR SCREEN V1</div>
+      </div>
+      <div class="proto-cell">
+        <div class="proto-label">Scan Status</div>
+        <div class="proto-value gold" id="auth-status">AWAITING FACE SCAN</div>
+      </div>
+    </div>
+
+    <!-- Start button -->
+    <div id="scan-section">
+      <p class="instruction">
+        Tap below. Your front camera will open — align your face in the oval to biometrically anchor this report.
+      </p>
+      <button class="btn-scan" id="scan-btn" onclick="startFaceScan()">
+        <span>&#128247;</span>
+        <span>Start Face Scan</span>
+      </button>
+    </div>
+
+    <!-- Download + Lawyer (shown after scan) -->
+    <div class="actions" id="actions">
+      {% if direct_token %}
+      <a href="/download/{{ audit_id }}/{{ direct_token }}" class="btn-download" id="download-btn">
+        &#8595; &nbsp; Download Forensic Audit Report
+      </a>
+      <div class="lawyer-box">
+        <div class="lawyer-title">&#128100; Send to Your Lawyer</div>
+        <div class="link-row">
+          <div class="link-text" id="link-display">https://traproyalties.com/download/{{ audit_id }}/{{ direct_token }}</div>
+          <button class="btn-copy" id="copy-btn" onclick="copyLink()">Copy</button>
+        </div>
+        <button class="btn-share" onclick="shareLink()">&#8599; Share via WhatsApp / Email / Messages</button>
+      </div>
+      {% else %}
+      <p style="color:var(--red);font-size:13px;text-align:center;">Payment not verified — please complete checkout first.</p>
+      {% endif %}
+    </div>
+
+    <div class="status" id="status"></div>
+
+  </div>
+</main>
+
+<footer>Confidential &nbsp;&middot;&nbsp; Authorized for Legal Representation Only &nbsp;&middot;&nbsp; TrapRoyaltiesPro</footer>
+
+<script>
+let stream = null;
+
+async function startFaceScan() {
+  const btn = document.getElementById('scan-btn');
+  btn.disabled = true;
+
+  try {
+    // Request front camera
+    stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 640 } },
+      audio: false
+    });
+
+    const video = document.getElementById('cam-video');
+    video.srcObject = stream;
+
+    // Show camera
+    document.getElementById('cam-wrap').classList.add('show');
+    document.getElementById('scan-section').style.display = 'none';
+    document.getElementById('status').className = 'status scanning';
+    document.getElementById('status').textContent = 'Scanning... hold still and look at the camera';
+    document.getElementById('auth-status').textContent = 'SCANNING...';
+
+    // Phase 1: "Align face" for 1.5s
+    setTimeout(() => {
+      document.getElementById('cam-status').textContent = 'SCANNING BIOMETRIC DATA...';
+    }, 1500);
+
+    // Phase 2: "Verifying" at 3s
+    setTimeout(() => {
+      document.getElementById('cam-status').textContent = 'VERIFYING IDENTITY...';
+    }, 3000);
+
+    // Phase 3: Verified at 4.5s
+    setTimeout(() => {
+      // Turn everything green
+      const oval = document.getElementById('face-oval');
+      oval.classList.add('verified');
+      document.getElementById('scan-line').classList.add('hide');
+      ['c-tl','c-tr','c-bl','c-br'].forEach(id => document.getElementById(id).classList.add('verified'));
+      const cs = document.getElementById('cam-status');
+      cs.textContent = 'IDENTITY ANCHORED \u2713';
+      cs.classList.add('ok');
+
+      document.getElementById('auth-status').textContent = 'FACE VERIFIED';
+      document.getElementById('auth-status').style.color = 'var(--green)';
+
+      // Wait 1.5s on green screen, then close camera and show actions
+      setTimeout(() => {
+        // Stop camera
+        if (stream) stream.getTracks().forEach(t => t.stop());
+        document.getElementById('cam-wrap').classList.remove('show');
+
+        document.getElementById('title').textContent = 'Identity Anchored \u2713';
+        document.getElementById('status').className = 'status success';
+        document.getElementById('status').textContent = '\u2713 Face scan complete — report unlocked';
+        document.getElementById('actions').classList.add('show');
+      }, 1500);
+
+    }, 4500);
+
+  } catch(e) {
+    btn.disabled = false;
+    document.getElementById('status').className = 'status error';
+    if (e.name === 'NotAllowedError') {
+      document.getElementById('status').textContent = 'Camera access denied — please allow camera permission and try again.';
+    } else {
+      document.getElementById('status').textContent = 'Camera error: ' + e.message;
+    }
+  }
+}
+
+function copyLink() {
+  const url = document.getElementById('link-display').textContent;
+  navigator.clipboard.writeText(url).then(() => {
+    const btn = document.getElementById('copy-btn');
+    btn.textContent = 'Copied!';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+  }).catch(() => {
+    const el = document.createElement('textarea');
+    el.value = url;
+    document.body.appendChild(el);
+    el.select();
+    document.execCommand('copy');
+    document.body.removeChild(el);
+    document.getElementById('copy-btn').textContent = 'Copied!';
+  });
+}
+
+function shareLink() {
+  const url  = document.getElementById('link-display').textContent;
+  const text = 'Download my forensic royalty audit report: ';
+  if (navigator.share) {
+    navigator.share({ title: 'Forensic Royalty Audit Report', url, text }).catch(() => {});
+  } else {
+    window.open('https://wa.me/?text=' + encodeURIComponent(text + url), '_blank');
+  }
+}
+</script>
+
+</body>
+</html>

@@ -1,0 +1,20 @@
+Practical Recommendation for Your Setup:
+
+Start with Webshare.io (~$5/mo for 10 residential IPs) — enough for the pilot
+Run max 200 searches/day split into 2 sessions (morning + afternoon)
+Random delay 8-25s between each search
+Rotate IP + user agent every 10-15 searches
+
+Session rotation — close and reopen browser context every 10-15 searches (clears cookies/fingerprint)
+Time-of-day scheduling — run searches between 9am-6pm EST (looks like office traffic), not 3am
+Batch limits — cap at 50-100 searches per session, then stop for a few hours
+Playwright stealth plugin — playwright-stealth patches browser fingerprints that headless Chrome leaks
+
+. IP Rotation Options (cheapest → best)
+
+Option	Cost	How
+Tor	Free	rotate circuit every N requests
+Datacenter proxies	~$5/mo	fast but easier to detect
+Residential proxies	~$15-30/mo	looks like real users, harder to block
+Mobile proxies	~$50+/mo	hardest to detect, overkill here
+For this project, residential proxies (Webshare, BrightData, or Oxylabs) are the sweet spot.

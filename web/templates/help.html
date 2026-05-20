@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Technical FAQ & Compliance — TrapRoyalties</title>
+  <style>
+    :root { --bg:#0f172a; --card:#1e293b; --border:#334155; --text:#f8fafc; --dim:#94a3b8; --green:#00c851; --gold:#f59e0b; --red:#ef4444; --blue:#3b82f6; }
+    * { box-sizing:border-box; margin:0; padding:0; }
+    body { background:var(--bg); color:var(--text); font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; min-height:100vh; }
+
+    header { padding:14px 32px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
+    .logo { font-size:12px; font-weight:800; letter-spacing:0.18em; }
+    .logo span { color:var(--dim); font-weight:400; }
+    .badge { font-size:10px; color:var(--green); border:1px solid rgba(0,200,81,0.4); padding:4px 10px; border-radius:4px; letter-spacing:0.08em; }
+
+    .page { max-width:860px; margin:0 auto; padding:48px 24px 80px; }
+
+    .page-title { font-size:22px; font-weight:800; margin-bottom:6px; }
+    .page-sub { font-size:13px; color:var(--dim); margin-bottom:32px; line-height:1.6; max-width:600px; }
+
+    /* Info banner */
+    .info-banner { background:rgba(59,130,246,0.08); border:1px solid rgba(59,130,246,0.25); border-radius:8px; padding:14px 18px; font-size:13px; color:#93c5fd; margin-bottom:40px; line-height:1.6; }
+    .info-banner strong { color:#bfdbfe; }
+
+    /* Workflow steps */
+    .section-label { font-size:10px; font-weight:700; letter-spacing:0.16em; text-transform:uppercase; color:var(--dim); margin-bottom:16px; }
+    .steps-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:14px; margin-bottom:48px; }
+    .step-card { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:18px; }
+    .step-num { width:26px; height:26px; border-radius:50%; background:#1E3A8A; color:#fff; font-size:12px; font-weight:700; display:flex; align-items:center; justify-content:center; margin-bottom:10px; }
+    .step-title { font-size:11px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--gold); margin-bottom:6px; }
+    .step-text { font-size:12px; color:var(--dim); line-height:1.6; }
+    .step-text strong { color:var(--text); }
+
+    /* FAQ */
+    .faq-grid { display:flex; flex-direction:column; gap:12px; margin-bottom:48px; }
+    .faq-item { background:var(--card); border:1px solid var(--border); border-radius:8px; overflow:hidden; }
+    .faq-q { width:100%; background:none; border:none; color:var(--text); font-size:13px; font-weight:700; padding:16px 18px; text-align:left; cursor:pointer; display:flex; justify-content:space-between; align-items:center; letter-spacing:0.02em; }
+    .faq-q:hover { background:rgba(255,255,255,0.03); }
+    .faq-q .tag { font-size:9px; font-weight:700; letter-spacing:0.12em; color:var(--gold); text-transform:uppercase; margin-right:auto; margin-left:12px; }
+    .faq-q .chevron { color:var(--dim); font-size:12px; transition:transform 0.2s; flex-shrink:0; }
+    .faq-item.open .chevron { transform:rotate(180deg); }
+    .faq-a { font-size:13px; color:var(--dim); line-height:1.7; padding:0 18px 16px; display:none; }
+    .faq-item.open .faq-a { display:block; }
+    .faq-a strong { color:var(--text); }
+    .faq-a a { color:#60a5fa; }
+
+    /* Stat bar */
+    .stat-row { display:flex; gap:12px; flex-wrap:wrap; margin-bottom:48px; }
+    .stat-box { background:var(--card); border:1px solid var(--border); border-radius:8px; padding:16px 20px; flex:1; min-width:140px; }
+    .stat-label { font-size:10px; color:var(--dim); letter-spacing:0.1em; text-transform:uppercase; margin-bottom:4px; }
+    .stat-val { font-size:20px; font-weight:800; color:var(--green); }
+    .stat-val.gold { color:var(--gold); }
+    .stat-val.blue { color:var(--blue); }
+
+    /* CTA */
+    .cta-box { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:24px; text-align:center; }
+    .cta-box h3 { font-size:16px; font-weight:700; margin-bottom:8px; }
+    .cta-box p { font-size:13px; color:var(--dim); margin-bottom:20px; line-height:1.6; }
+    .btn-back { display:inline-block; background:#1E3A8A; color:#fff; font-size:13px; font-weight:700; padding:12px 28px; border-radius:8px; text-decoration:none; letter-spacing:0.04em; }
+    .btn-back:hover { background:#1d4ed8; }
+
+    footer { text-align:center; padding:20px; font-size:10px; color:var(--dim); border-top:1px solid var(--border); }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">TRAPROYALTIES <span>FORENSIC UNIT</span></div>
+  <div class="badge">TECHNICAL FAQ & REGULATORY COMPLIANCE</div>
+</header>
+
+<div class="page">
+
+  <h1 class="page-title">Recovery Workflow & Compliance FAQ</h1>
+  <p class="page-sub">How TrapRoyalties Pro converts a detected ISRC registration gap into a SoundExchange-ready recovery packet — and answers to every question your compliance team will ask.</p>
+
+  <div class="info-banner">
+    <strong>Overview:</strong> When our SMTP engine detects a Registration Gap — high-volume ISRCs with no registered claimant at SoundExchange — we follow a four-step process to verify identity, generate compliant paperwork, and support escrow release. The $150 fee covers all four steps.
+  </div>
+
+  <!-- Workflow -->
+  <div class="section-label">4-Step Escrow Release Workflow</div>
+  <div class="steps-grid">
+    <div class="step-card">
+      <div class="step-num">1</div>
+      <div class="step-title">Audit Review</div>
+      <p class="step-text">Our engine identifies the <strong>Registration Gap</strong> — ISRCs with high stream volume but no registered claimant at SoundExchange. Flagged as Black Box / Statutory Suspense.</p>
+    </div>
+    <div class="step-card">
+      <div class="step-num">2</div>
+      <div class="step-title">Biometric Signature</div>
+      <p class="step-text">Artist completes a 5-second liveness check. We generate a <strong>SHA-256 hash</strong> anchoring the LOD Part 1 Agreement to a verified, on-chain identity.</p>
+    </div>
+    <div class="step-card">
+      <div class="step-num">3</div>
+      <div class="step-title">Auto-Fill Schedule 1</div>
+      <p class="step-text">Payment unlocks a pre-filled <strong>LOD Part 2 Repertoire Chart</strong>. No manual data entry for your paralegals. Reduces filing errors to near zero.</p>
+    </div>
+    <div class="step-card">
+      <div class="step-num">4</div>
+      <div class="step-title">Submission</div>
+      <p class="step-text">Your firm files the packet with SoundExchange. The Forensic Audit serves as <strong>Evidence of Discrepancy</strong> required to support release of Suspense funds.</p>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="section-label">Protocol Benchmarks</div>
+  <div class="stat-row">
+    <div class="stat-box">
+      <div class="stat-label">Avg. Recovery Cycle</div>
+      <div class="stat-val blue">45–90 Days</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-label">Statutory Basis</div>
+      <div class="stat-val gold">17 U.S.C. §114</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-label">Admin Fee</div>
+      <div class="stat-val">$150 Flat</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-label">Royalty % Taken</div>
+      <div class="stat-val">0%</div>
+    </div>
+  </div>
+
+  <!-- FAQ -->
+  <div class="section-label">Compliance & Protocol FAQ</div>
+  <div class="faq-grid">
+
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggle(this)">
+        Why was this asset flagged?
+        <span class="tag">Methodology</span>
+        <span class="chevron">&#9660;</span>
+      </button>
+      <div class="faq-a">Our <strong>SMTP Protocol</strong> cross-references distribution logs against SoundExchange's ISRC registry. When a recording generates significant digital performance royalties but has no registered claimant, it enters <strong>Statutory Suspense</strong> — a holding account commonly called "Black Box." Our engine flags these ISRCs automatically.</div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggle(this)">
+        Is this a legal filing? What is TrapRoyalties' role?
+        <span class="tag">Legal Standing</span>
+        <span class="chevron">&#9660;</span>
+      </button>
+      <div class="faq-a">No. TrapRoyalties Pro is a <strong>technical data vendor</strong>. We provide the forensic evidence package and pre-populated LOD documentation. Your firm remains the filer of record with SoundExchange. We do not provide legal advice or act as counsel.</div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggle(this)">
+        What is the statutory basis for this claim?
+        <span class="tag">17 U.S.C. §114</span>
+        <span class="chevron">&#9660;</span>
+      </button>
+      <div class="faq-a"><strong>17 U.S.C. §114</strong> mandates payment of digital performance royalties for sound recordings. Under the <strong>Music Modernization Act (MMA, 2018)</strong> and the <strong>AMP Act</strong>, SoundExchange is required to hold and distribute these funds. Our audit proves the discrepancy between the statutory mandate and the current registration state, creating the legal basis for the LOD filing.</div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggle(this)">
+        Why does the artist need to do a biometric scan?
+        <span class="tag">Identity Attestation</span>
+        <span class="chevron">&#9660;</span>
+      </button>
+      <div class="faq-a">SoundExchange's LOD process requires identity verification from the rights holder. Our liveness check generates a <strong>SHA-256 cryptographic hash</strong> anchored to the Monad blockchain, creating a tamper-proof digital signature. This replaces the need for a notarized signature in the initial filing stage and speeds up processing significantly.</div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggle(this)">
+        Why the $150 fee? What does it cover?
+        <span class="tag">Fee Transparency</span>
+        <span class="chevron">&#9660;</span>
+      </button>
+      <div class="faq-a">The flat $150 is an <strong>administrative processing fee</strong> covering: (1) SHA-256 cryptographic anchoring on Monad blockchain, (2) biometric identity attestation, (3) manual mapping of ISRC metadata into submission-ready Schedule 1 format, and (4) generation of the 4-page Certified Forensic Audit PDF. TrapRoyalties Pro takes <strong>0% of recovered royalties</strong> — the artist keeps everything.</div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggle(this)">
+        How long does recovery take?
+        <span class="tag">Timeline</span>
+        <span class="chevron">&#9660;</span>
+      </button>
+      <div class="faq-a">Once the Certified Audit Packet is submitted to SoundExchange, funds are typically released in the <strong>next distribution cycle — approximately 45 to 90 days</strong> — pending registry processing and any identity verification by SoundExchange. The MMA requires SoundExchange to make reasonable efforts to identify and pay rights holders.</div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggle(this)">
+        How is data integrity guaranteed?
+        <span class="tag">Data Security</span>
+        <span class="chevron">&#9660;</span>
+      </button>
+      <div class="faq-a">All audit findings are secured via <strong>SHA-256 hashing</strong> anchored on the <strong>Monad blockchain</strong> at two points: (1) when the artist completes biometric attestation, and (2) when the PDF is downloaded. The on-chain transaction hash is displayed on the lawyer page and can be verified independently at <a href="https://testnet.monadexplorer.com" target="_blank">testnet.monadexplorer.com</a>.</div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggle(this)">
+        What if SoundExchange rejects the mapping?
+        <span class="tag">Adjudication Guarantee</span>
+        <span class="chevron">&#9660;</span>
+      </button>
+      <div class="faq-a">If SoundExchange rejects the identified ISRC mapping as "Previously Registered" — meaning the asset was already claimed by another party — <strong>a full automated refund of the $150 fee is processed within 14 days</strong>. This guarantee is stated on the payment page.</div>
+    </div>
+
+  </div>
+
+  <!-- CTA -->
+  <div class="cta-box">
+    <h3>Ready to file?</h3>
+    <p>Return to the case file to complete payment and download the Certified Forensic Audit Packet.</p>
+    <a href="javascript:history.back()" class="btn-back">&#8592; &nbsp; Return to Case File</a>
+  </div>
+
+</div>
+
+<footer>Confidential &nbsp;·&nbsp; TrapRoyaltiesPro &nbsp;·&nbsp; Technical FAQ V1 &nbsp;·&nbsp; Not legal advice</footer>
+
+<script>
+function toggle(btn) {
+  const item = btn.closest('.faq-item');
+  item.classList.toggle('open');
+}
+</script>
+
+</body>
+</html>

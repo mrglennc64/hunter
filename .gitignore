@@ -8,3 +8,10 @@ __pycache__/
 venv/
 node_modules/
 .DS_Store
+
+# Secrets — never commit
+proxies.txt
+keyshunterio.txt
+newvps.txt
+*.key
+*.pem

@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>TrapRoyaltiesPro — Forensic Royalty Audit | {{ lead.artist }}</title>
+  <style>
+    :root {
+      --navy: #141B25; --blue: #2C3E50; --green: #27AE60;
+      --red: #b91c1c; --border: #D1D5DB; --bg: #F9FAFB;
+      --text: #1F2937; --muted: #6b7280;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; background: var(--bg); color: var(--text); }
+
+    /* Header */
+    .admin-header { background: var(--navy); color: #fff; padding: 14px 40px; display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #34495E; }
+    .admin-header strong { font-size: 13px; letter-spacing: 0.12em; }
+    .secure-tag { font-family: monospace; font-size: 11px; color: #94A3B8; }
+
+    /* Layout */
+    .container { max-width: 1020px; margin: 36px auto; padding: 0 20px; }
+
+    /* Case header */
+    .case-header { background: #fff; border: 1px solid var(--border); padding: 24px 28px; margin-bottom: 24px; border-radius: 4px; }
+    .case-ref { font-size: 18px; font-weight: 700; color: var(--navy); margin-bottom: 6px; }
+    .case-status { color: var(--red); font-weight: 600; font-size: 13px; margin-bottom: 4px; }
+    .case-meta { font-size: 13px; color: var(--muted); line-height: 1.7; }
+    .case-meta strong { color: var(--text); }
+
+    /* Two-col grid */
+    .grid { display: grid; grid-template-columns: 1fr 360px; gap: 24px; }
+
+    /* Left panel */
+    .panel { background: #fff; border: 1px solid var(--border); border-radius: 4px; padding: 28px; }
+    .section-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 14px; }
+
+    /* Evidence card */
+    .evidence-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+    .ev-cell { background: var(--bg); border: 1px solid var(--border); border-radius: 4px; padding: 10px 12px; }
+    .ev-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 3px; }
+    .ev-value { font-size: 13px; font-weight: 500; }
+    .ev-value.red { color: var(--red); font-weight: 700; }
+    .ev-value.mono { font-family: monospace; font-size: 12px; }
+
+    /* Legal interpretation */
+    .legal-box { background: #f0f4ff; border-left: 4px solid #1E3A8A; padding: 14px 16px; margin: 16px 0; border-radius: 0 4px 4px 0; font-size: 13px; line-height: 1.6; }
+
+    /* What's included */
+    .doc-list { list-style: none; margin: 12px 0 0; }
+    .doc-list li { display: flex; align-items: flex-start; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border); }
+    .doc-list li:last-child { border-bottom: none; }
+    .doc-num { background: #E5E7EB; color: var(--blue); font-weight: 700; font-size: 11px; min-width: 28px; height: 28px; border-radius: 4px; display: flex; align-items: center; justify-content: center; }
+    .doc-info strong { font-size: 13px; display: block; margin-bottom: 2px; }
+    .doc-info span { font-size: 12px; color: var(--muted); }
+
+    /* Attorney notice */
+    .attorney-notice { background: #FFFBEB; border: 1px solid #FEF3C7; padding: 12px 14px; border-radius: 4px; font-size: 12px; color: #92400E; margin-top: 16px; }
+
+    /* Workflow */
+    .workflow { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
+    .wf-step { background: var(--bg); border: 1px solid var(--border); border-radius: 4px; padding: 12px 14px; }
+    .wf-step strong { font-size: 12px; display: block; margin-bottom: 4px; color: var(--navy); }
+    .wf-step p { font-size: 12px; color: var(--muted); line-height: 1.5; margin: 0; }
+
+    /* Right panel — payment */
+    .pay-panel { background: #fff; border: 1px solid var(--border); border-radius: 4px; padding: 24px; height: fit-content; position: sticky; top: 20px; }
+    .recovery-box { background: var(--bg); border: 1px dashed var(--border); padding: 18px; margin-bottom: 20px; border-radius: 4px; }
+    .rec-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); font-weight: 700; margin-bottom: 6px; }
+    .rec-value { font-size: 26px; font-weight: 800; color: var(--navy); }
+    .rec-sub { font-size: 11px; color: var(--muted); margin-top: 4px; }
+    .rec-range { display: flex; gap: 10px; margin-top: 10px; }
+    .rec-range div { flex: 1; background: #fff; border: 1px solid var(--border); border-radius: 4px; padding: 8px 10px; }
+    .rec-range .rl { font-size: 10px; color: var(--muted); text-transform: uppercase; }
+    .rec-range .rv { font-size: 14px; font-weight: 700; }
+
+    .fee-row { margin-bottom: 18px; }
+    .fee-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 700; margin-bottom: 4px; }
+    .fee-value { font-size: 20px; font-weight: 800; }
+
+    .btn-pay { display: block; width: 100%; padding: 16px; background: var(--navy); color: #fff; text-align: center; font-weight: 700; font-size: 14px; border: none; border-radius: 4px; cursor: pointer; letter-spacing: 0.04em; margin-bottom: 10px; }
+    .btn-pay:hover { background: #0f1520; }
+    .pay-sub { font-size: 11px; color: var(--muted); text-align: center; }
+
+    /* Guarantee */
+    .guarantee { margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--border); font-size: 11px; color: var(--muted); line-height: 1.6; }
+    .guarantee strong { color: var(--text); }
+
+    /* Pills */
+    .pills { margin-top: 16px; }
+    .pill { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 11px; border: 1px solid var(--border); color: var(--muted); background: var(--bg); margin: 3px 3px 3px 0; }
+
+    /* Divider */
+    .divider { border-top: 1px solid var(--border); margin: 20px 0; }
+
+    /* Footer */
+    footer { text-align: center; padding: 20px; font-size: 11px; color: var(--muted); border-top: 1px solid var(--border); margin-top: 40px; }
+
+    @media (max-width: 768px) {
+      .grid { grid-template-columns: 1fr; }
+      .evidence-grid { grid-template-columns: 1fr; }
+      .workflow { grid-template-columns: 1fr; }
+      .admin-header { flex-direction: column; gap: 6px; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="admin-header">
+  <strong>TRAPROYALTIES FORENSIC RECOVERY DIVISION</strong>
+  <div class="secure-tag">TLS 1.3 SECURE &nbsp;·&nbsp; NODE: STOCKHOLM-1 &nbsp;·&nbsp; PROTOCOL: TR-V1.2</div>
+</div>
+
+<div class="container">
+
+  <!-- Case Header -->
+  <div class="case-header">
+    <div class="case-ref">CASE REF: {{ audit_id }}</div>
+    <div class="case-status">REGISTRATION GAP DETECTED</div>
+    <div class="case-meta">
+      <strong>Subject Artist:</strong> {{ lead.artist }} &nbsp;·&nbsp;
+      <strong>Track:</strong> {{ lead.track }} &nbsp;·&nbsp;
+      <strong>Classification:</strong> {{ lead.priority }} &nbsp;·&nbsp;
+      <strong>Jurisdiction:</strong> United States — Digital Performance Royalty Domain
+    </div>
+  </div>
+
+  <div class="grid">
+
+    <!-- LEFT: Evidence + Docs + Workflow -->
+    <div>
+
+      <!-- Evidence Summary -->
+      <div class="panel" style="margin-bottom:20px;">
+        <div class="section-title">Evidence Summary</div>
+        <div class="evidence-grid">
+          <div class="ev-cell">
+            <div class="ev-label">Verified ISRC</div>
+            <div class="ev-value mono">{{ redacted_isrc }} 🔒</div>
+          </div>
+          <div class="ev-cell">
+            <div class="ev-label">Registry Status</div>
+            <div class="ev-value red">Unregistered / Non-Identified</div>
+          </div>
+          <div class="ev-cell">
+            <div class="ev-label">DSP Stream Volume</div>
+            <div class="ev-value">
+              {% if lead.streams %}{{ "{:,}".format(lead.streams | int) }}+{% else %}—{% endif %}
+            </div>
+          </div>
+          <div class="ev-cell">
+            <div class="ev-label">Accrual Window</div>
+            <div class="ev-value">Retroactive (36 Months)</div>
+          </div>
+          <div class="ev-cell">
+            <div class="ev-label">Failure Type</div>
+            <div class="ev-value">ISRC-to-Performer Mapping Breakdown</div>
+          </div>
+          <div class="ev-cell">
+            <div class="ev-label">Risk Level</div>
+            <div class="ev-value red">High — Black Box Accrual Likely</div>
+          </div>
+        </div>
+
+        <div class="legal-box">
+          Data indicates this asset is currently held in <strong>Suspense / Black Box accounts</strong>
+          due to a metadata failure at the registry level. This condition is actionable under
+          SoundExchange's <strong>Featured Artist Letter of Direction (LOD)</strong> framework
+          (17 U.S.C. §114 &amp; §112).
+          <br><br>
+          <strong>Recommended Action:</strong> Submit a Certified LOD Repertoire Chart + Forensic Audit
+          Packet to SoundExchange to initiate correction and retroactive royalty release.
+          <br>
+          <strong>Expected Timeline:</strong> 30–90 days depending on SoundExchange queue and metadata validation.
+        </div>
+
+        <div class="divider"></div>
+        <div class="section-title">Legal Use Cases</div>
+        <div class="pills">
+          <span class="pill">SoundExchange LOD submissions</span>
+          <span class="pill">Black box royalty claims</span>
+          <span class="pill">Catalog valuation &amp; due diligence</span>
+          <span class="pill">Estate / probate royalty recovery</span>
+          <span class="pill">Rights ownership disputes</span>
+          <span class="pill">Metadata correction filings</span>
+          <span class="pill">AMP Act (Pre-1995) certification</span>
+        </div>
+      </div>
+
+      <!-- What's Included -->
+      <div class="panel" style="margin-bottom:20px;">
+        <div class="section-title">Certified Extraction — Contents</div>
+        <p style="font-size:13px;color:var(--muted);margin-bottom:12px;">
+          The following documents are compiled into a single <strong>Attorney-Mode PDF</strong>,
+          formatted for direct filing with SoundExchange, Inc.
+        </p>
+        <ul class="doc-list">
+          <li>
+            <div class="doc-num">01</div>
+            <div class="doc-info">
+              <strong>4-Page Forensic Audit Exhibit</strong>
+              <span>Black Box accrual analysis, stream validation, registry gap documentation, statutory citations (17 U.S.C. §114)</span>
+            </div>
+          </li>
+          <li>
+            <div class="doc-num">02</div>
+            <div class="doc-info">
+              <strong>Certified LOD Repertoire Chart (Schedule 1)</strong>
+              <span>Auto-populated metadata formatted to SoundExchange Part 2 specifications — no manual data entry</span>
+            </div>
+          </li>
+          <li>
+            <div class="doc-num">03</div>
+            <div class="doc-info">
+              <strong>Legal Attestation Certificate</strong>
+              <span>Formal declaration of rights-holder identity via Secure Enclave biometric verification</span>
+            </div>
+          </li>
+          <li>
+            <div class="doc-num">04</div>
+            <div class="doc-info">
+              <strong>Chain-of-Custody Hash Verification</strong>
+              <span>SHA-256 anchor providing immutable proof of data integrity — accepted as digital signature certificate by SoundExchange</span>
+            </div>
+          </li>
+        </ul>
+
+        <div class="attorney-notice">
+          <strong>ATTORNEY NOTICE:</strong> This packet includes the unmasked ISRC codes and unredacted
+          registry data required to complete <em>SoundExchange LOD Part 1 &amp; Schedule 1</em>.
+          The SHA-256 Hash on Page 4 satisfies SoundExchange's electronic signature certificate requirement.
+        </div>
+      </div>
+
+      <!-- Recovery Workflow -->
+      <div class="panel">
+        <div class="section-title">Recovery Workflow — 4 Steps to Escrow Release</div>
+        <div class="workflow">
+          <div class="wf-step">
+            <strong>1. AUDIT REVIEW</strong>
+            <p>Our engine identifies the Registration Gap — ISRCs with high stream volume but no registered claimant at SoundExchange.</p>
+          </div>
+          <div class="wf-step">
+            <strong>2. BIOMETRIC SIGNATURE</strong>
+            <p>Perform a 5-second liveness check. We generate the SHA-256 Hash required for the LOD Part 1 Agreement.</p>
+          </div>
+          <div class="wf-step">
+            <strong>3. PRE-FILLED SCHEDULE 1</strong>
+            <p>Your payment unlocks a pre-filled LOD Part 2 Repertoire Chart. No manual data entry required.</p>
+          </div>
+          <div class="wf-step">
+            <strong>4. SUBMISSION</strong>
+            <p>File with SoundExchange at accounts@soundexchange.com. Our Forensic Audit serves as the Evidence of Discrepancy.</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- RIGHT: Payment Panel -->
+    <div class="pay-panel">
+
+      <div class="recovery-box">
+        <div class="rec-label">Estimated Recovery Potential</div>
+        <div class="rec-value">{{ lead.bounty_high }}</div>
+        <div class="rec-sub">(Subject to registry acceptance and DSP reconciliation)</div>
+        <div class="rec-range">
+          <div>
+            <div class="rl">Conservative</div>
+            <div class="rv">{{ lead.bounty_low }}</div>
+          </div>
+          <div>
+            <div class="rl">Optimized</div>
+            <div class="rv">{{ lead.bounty_high }}</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="fee-row">
+        <div class="fee-label">Extraction &amp; Certification Fee</div>
+        <div class="fee-value">$150.00</div>
+      </div>
+
+      <form action="/pay/{{ audit_id }}" method="POST">
+        <button type="submit" class="btn-pay">
+          GENERATE CERTIFIED RECOVERY PACKET — $150
+        </button>
+      </form>
+      <div class="pay-sub">One-time issuance &nbsp;·&nbsp; No subscription &nbsp;·&nbsp; Immediate digital delivery</div>
+
+      <div class="guarantee">
+        <strong>ADJUDICATION GUARANTEE:</strong> If SoundExchange rejects the identified ISRC mapping
+        as "Previously Registered," a full automated refund is processed via the original payment method.
+        Email support@traproyalties.com with the official Registry Rejection Notice within 14 days of purchase.
+      </div>
+
+    </div>
+
+  </div>
+</div>
+
+<footer>
+  <strong>TrapRoyaltiesPro — Rights &amp; Royalty Intelligence</strong><br>
+  Forensic Audit Division &nbsp;·&nbsp; Compliance &amp; Metadata Correction<br>
+  All documents issued are prepared for legal and administrative submission.
+</footer>
+
+</body>
+</html>

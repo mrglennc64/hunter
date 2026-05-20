@@ -1,0 +1,28 @@
+# REST Client quick-shot tests (VS Code extension by Huachao Mao)
+# Click "Send Request" above each block to test without running the full script
+
+### MusicBrainz — test one artist
+GET https://musicbrainz.org/ws/2/recording?query=artist:"BossMan Dlow" AND recording:"Mr Pot Scraper"&fmt=json
+User-Agent: MusicRightsAuditor/1.0 (contact@your-domain.com)
+
+###
+
+### MusicBrainz — test another
+GET https://musicbrainz.org/ws/2/recording?query=artist:"Doechii" AND recording:"Anxiety"&fmt=json
+User-Agent: MusicRightsAuditor/1.0 (contact@your-domain.com)
+
+###
+
+### Deezer fallback — test search
+GET https://api.deezer.com/search?q=track:"Anxiety" artist:"Doechii"
+
+###
+
+### Deezer — get track detail by ID (replace 123456 with real ID from above)
+GET https://api.deezer.com/track/123456
+
+###
+
+### Billboard Year-End 2024 (just confirms page loads)
+GET https://www.billboard.com/charts/year-end/2024/hot-100-songs/
+User-Agent: BountyHunterAudit/1.0 (contact@your-domain.com)
